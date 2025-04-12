@@ -9,6 +9,7 @@ import { AuthGuard } from './auth.guards';
 import { UsersModule } from 'src/users/users.module';
 import { AppService } from 'src/app.service';
 import { RolesGuard } from './guards/roles.guard';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -21,16 +22,9 @@ import { RolesGuard } from './guards/roles.guard';
   ],
   controllers: [AuthController],
   providers: [
-    // AppService,
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
+
     AuthService,
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
+    JwtStrategy,  
   ],
   exports: [AuthService],
 })

@@ -1,6 +1,11 @@
-import { CanActivate, Injectable, ExecutionContext } from '@nestjs/common';
+import {
+  CanActivate,
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from '../enum/role.enum'; // Переконайтеся, що шлях правильний
+import { Role } from '../enum/role.enum'; // Переконайтесь, що шлях правильний
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
 @Injectable()
@@ -17,15 +22,23 @@ export class RolesGuard implements CanActivate {
       return true; // Якщо ролі не задані, дозволяємо доступ
     }
 
-    // const { user } = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest();
+    console.log(request.user);
 
-    // if (!user || !user.roles) {
-    //   return false; // Якщо користувач або його ролі не визначені, забороняємо доступ
-    // }
+    const user = request.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
 
-    // return requiredRoles.some((role) => user.roles.includes(role));
-    const role = context.switchToHttp().getRequest();
-    const rolesArr = role.body.roles;
-    return requiredRoles.some((roles) => rolesArr.includes(roles));
+    if (!user.role) {
+      throw new UnauthorizedException('Role not found for the user');
+    }
+
+    // return requiredRoles.some((role) => rolesArr.includes(role));
+    const rolesArr = Array.isArray(request.user?.role)
+      ? request.user.role
+      : [request.user?.role]; // перетворити на масив, якщо це один рядок
+
+    return requiredRoles.some((role) => rolesArr.includes(role));
   }
 }

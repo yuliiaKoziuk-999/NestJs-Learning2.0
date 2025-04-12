@@ -1,4 +1,4 @@
-import { Body, Injectable, Query } from '@nestjs/common';
+import { Body, Injectable, Query, UnauthorizedException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { PaginationDTO } from './dto/pagination.dto';
@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { ValidationPipe } from '@nestjs/common';
 import { contains } from 'class-validator';
 import { ListDTO } from './dto/listUsers.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +17,18 @@ export class UsersService {
     // Перевіряємо, чи існує користувач з таким же username
     const existingUser = await this.databaseService.employee.findUnique({
       where: { username: createUserDto.username },
+    });
+
+    if (existingUser) {
+      throw new Error('User already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    return this.databaseService.employee.create({
+      data: {
+        ...createUserDto,
+        password: hashedPassword,
+      },
     });
   }
 
@@ -54,6 +67,14 @@ export class UsersService {
       orderBy: {
         name: 'asc',
       },
+      //
+      select:{
+      id: true,
+      username: true,
+      role: true,
+      email: true,
+
+      }
     });
 
     const total = await this.databaseService.employee.count({ where });
@@ -70,12 +91,26 @@ export class UsersService {
   }
 
   async findOne({ id, username }: { id?: number; username?: string }) {
-    return this.databaseService.employee.findUnique({
+  const user = await this.databaseService.employee.findUnique({
       where: {
         id,
         username,
       },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        email: true, // Не включаємо пароль
+        password: true,
+      },
     });
+
+    // Перевіряємо, чи користувач знайдений
+  if (!user) {
+    throw new UnauthorizedException('User not found');
+  }
+
+  return user;
   }
 
   async update(id: number, updateEmployeeDto: Prisma.EmployeeUpdateInput) {
@@ -85,6 +120,23 @@ export class UsersService {
       },
       data: updateEmployeeDto,
     });
+  }
+
+  async getProfile(userId: number) {
+    // Отримуємо користувача з бази
+    const user = await this.databaseService.employee.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Видаляємо пароль із користувача
+    const { password, ...safeUser } = user;
+
+    // Повертаємо дані без пароля
+    return safeUser;
   }
 
   async remove(id: number) {

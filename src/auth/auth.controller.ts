@@ -20,22 +20,28 @@ import { Request } from '@nestjs/common';
 import { Public } from '../common/public.decorator'; // Імпортуємо декоратор
 import { Roles } from './decorators/roles.decorator';
 import { Role } from './enum/role.enum';
+import { Console } from 'console';
+import { console } from 'inspector';
+import { IsPublic } from './decorators/isPublicDecorator';
 
 @Controller('auth')
 @Injectable()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
+  @IsPublic()
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDTO: Record<string, any>) {
+  signIn(@Body() signInDTO: SignInDTO) {
+    console.log(signInDTO.username);
+    console.log(signInDTO.password)
     return this.authService.signIn(signInDTO.username, signInDTO.password);
   }
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  async getProfile(@Request() req) {
+    // Викликаємо метод з сервісу для отримання профілю без пароля
+    return await this.getProfile(req.user.id);
   }
 
   @Post()

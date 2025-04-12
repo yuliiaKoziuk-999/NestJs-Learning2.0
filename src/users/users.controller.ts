@@ -9,14 +9,17 @@ import {
   Query,
   ParseIntPipe,
   ValidationPipe,
+  SetMetadata,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { DatabaseService } from 'src/database/database.service';
 import { ListDTO } from './dto/listUsers.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from '../auth/enum/role.enum';
+import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
+import { AuthGuard } from 'src/auth/auth.guards';
 
 @Controller('users') //users
 export class UsersController {
@@ -27,23 +30,18 @@ export class UsersController {
   POST /users
   PATCH /users/:id
   */
-
-  @Get() // GET /users or /users?role=value
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthGuard)
+  @Get('profile') // GET /users or /users?role=value
   async findAll(@Body() body: ListDTO) {
     return this.userService.findAll(body);
   }
 
-  // @Get('search') // GET /users/search?name=value
-  // async findNames(@Query('name') name?: string) {
-  //   if (!name) {
-  //     return `Error 404`;
-  //   }
-  //   return this.userService.findByName(name);
-  // }
-
   @Get(':id') // GET /users/:id
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.findOne({ id });
+    const { password, ...user } = await this.userService.findOne({ id });
+    return user;
   }
 
   @Post() //POST /users
@@ -61,6 +59,10 @@ export class UsersController {
     return this.userService.update(id, updateUserDto);
   }
 
+  //ТОБТО ЮЗЕРІВ ВИДАЛЯТИ МОЖЕ ЛИШЕ АДМІН
+  // @SetMetadata('role', [Role.ADMIN])
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   @Delete(':id') // DELETE /users/:id
   async delete(@Param('id', ParseIntPipe) id: number) {
     return this.userService.remove(id);
