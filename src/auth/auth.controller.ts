@@ -10,6 +10,8 @@ import {
   HttpCode,
   UseGuards,
   Injectable,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -20,20 +22,25 @@ import { Request } from '@nestjs/common';
 import { Public } from '../common/public.decorator'; // Імпортуємо декоратор
 import { Roles } from './decorators/roles.decorator';
 import { Role } from './enum/role.enum';
-import { Console } from 'console';
-import { console } from 'inspector';
 import { IsPublic } from './decorators/isPublicDecorator';
+import { RolesGuard } from '../guards/role/roles.guard';
+import { GoogleAuthGuard } from 'src/guards/google-auth/google-auth.guard';
 
 @Controller('auth')
 @Injectable()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+  @Public()
+  @HttpCode(HttpStatus.CREATED)
+  @Post('registration')
+  async registration(@Body() createAuthDto: CreateAuthDto) {
+    return this.authService.register(createAuthDto);
+  }
+
   @IsPublic()
   @HttpCode(HttpStatus.OK)
   @Post('login')
   signIn(@Body() signInDTO: SignInDTO) {
-    console.log(signInDTO.username);
-    console.log(signInDTO.password)
     return this.authService.signIn(signInDTO.username, signInDTO.password);
   }
 
@@ -41,7 +48,29 @@ export class AuthController {
   @Get('profile')
   async getProfile(@Request() req) {
     // Викликаємо метод з сервісу для отримання профілю без пароля
-    return await this.getProfile(req.user.id);
+    return await this.authService.getProfile(req.user.id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('signout')
+  signOut(@Req() req) {
+    this.authService.signOut(req.user.id);
+  }
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/login')
+  googleLogin() {}
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  async googleCallback(@Req() req, @Res() res) {
+    const response = await this.authService.signIn(
+      req.user.username,
+      req.user.password,
+    );
+    res.redirect(`http://localhost:5173?token=${response.access_token}`);
   }
 
   @Post()
@@ -54,8 +83,7 @@ export class AuthController {
   findAll() {
     return this.authService.findAll();
   }
-
-  @Public()
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Get(':id')
   findOne(@Param('id') id: string, @Param('username') username: string) {

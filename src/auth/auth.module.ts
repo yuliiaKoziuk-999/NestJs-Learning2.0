@@ -2,30 +2,35 @@ import { forwardRef, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 
-import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constans';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './auth.guards';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
-import { AppService } from 'src/app.service';
-import { RolesGuard } from './guards/roles.guard';
-import { JwtStrategy } from './jwt.strategy';
+import { JwtStrategy } from '../auth/strategies/jwt.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { GoogleStrategy } from './strategies/google.strategy';
+import jwtConfig from './config/jwt.config';
+import refreshJwtConfig from './config/refresh-jwt.config';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
-    JwtModule.register({
-      global: true,
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '1h' },
+
+    // Jwt for access token
+    JwtModule.registerAsync({
+      useFactory: async (configService: ConfigService) => {
+        const jwtConfig = configService.get<JwtModuleOptions>('jwt');
+        if (!jwtConfig) {
+          throw new Error('JWT config is not defined');
+        }
+        return jwtConfig;
+      },
+      inject: [ConfigService],
     }),
+
+    ConfigModule.forFeature(jwtConfig),
+    ConfigModule.forFeature(refreshJwtConfig), // just load it, don't pass to JwtModule
   ],
   controllers: [AuthController],
-  providers: [
-
-    AuthService,
-    JwtStrategy,  
-  ],
-  exports: [AuthService],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

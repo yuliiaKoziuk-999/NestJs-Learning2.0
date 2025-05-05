@@ -18,7 +18,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ListDTO } from './dto/listUsers.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from '../auth/enum/role.enum';
-import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
+import { RolesGuard } from 'src/guards/role/roles.guard';
 import { AuthGuard } from 'src/auth/auth.guards';
 
 @Controller('users') //users

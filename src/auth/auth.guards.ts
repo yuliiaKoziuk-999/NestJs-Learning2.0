@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constans';
 import { Reflector } from '@nestjs/core';
-
+import { Request } from 'express';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -17,38 +17,43 @@ export class AuthGuard implements CanActivate {
   ) {} // Додаємо конструктор для DI
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.get<boolean>('isPublic', context.getHandler());
-   
+    // підтримку публічних маршрутів через метадані
+    const isPublic = this.reflector.get<boolean>(
+      'isPublic',
+      context.getHandler(),
+    );
+
     if (isPublic) {
       return true;
     }
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
+
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Token not found');
     }
     try {
-      const data=this.jwtService.decode(token);
-      const playload = await this.jwtService.verifyAsync(token, {
+      const payload = await this.jwtService.verifyAsync(token, {
         secret: jwtConstants.secret,
-  
       });
-      request['user'] = data; // Додаємо розпізнаного користувача до запиту
-      console.log(`DATA: ${data}`)
-      console.log(`PLAYLOAD: ${playload}`);
+      request.user = payload;
+      // request['user'] = payload; // Додаємо розпізнаного користувача до запиту
+      console.log('Verified payload:', payload);
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Invalid token');
     }
     return true;
   }
 
-  private extractTokenFromHeader(request): string | undefined {
-    const authHeader = request.headers.authorization;
-    if (!authHeader) {
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const authHeader = request.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
       return undefined; // Якщо заголовок відсутній
     }
 
-    const [type, token] = authHeader?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    // const [type, token] = authHeader?.split(' ') ?? [];
+    // return type === 'Bearer' ? token : undefined;
+    // ✅ Надійніше виділення токена
+    return authHeader.split(' ')[1];
   }
 }
