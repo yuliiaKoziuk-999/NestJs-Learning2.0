@@ -1,8 +1,14 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { ListDTO } from './dto/listUsers.dto';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto'; // Додаємо для генерації безпечного пароля
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
@@ -11,18 +17,30 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const existingUser = await this.databaseService.employee.findUnique({
-      where: { username: createUserDto.username },
+      where: { email: createUserDto.email },
     });
 
     if (existingUser) {
       throw new Error('User already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    // Якщо користувач автентифікується через Google і пароль не передається
+    let hashedPassword = '';
+
+    if (createUserDto.password) {
+      hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    }
+
+    // Якщо username не надано, використовуємо email або генеруємо значення
+    const username =
+      createUserDto.username || createUserDto.email.split('@')[0]; // Наприклад, email до символу '@'
+    const role = createUserDto.role || 'INTERN';
+
     return this.databaseService.employee.create({
       data: {
         ...createUserDto,
         password: hashedPassword,
+        role,
       },
     });
   }
@@ -39,6 +57,7 @@ export class UsersService {
       where: { id },
     });
   }
+
   async findAll({ options, page, limit, search }: ListDTO) {
     page = page ? parseInt(page.toString(), 10) : 1;
     limit = limit ? parseInt(limit.toString(), 10) : 10;
@@ -90,33 +109,30 @@ export class UsersService {
     };
   }
 
-  // async findOne({ id, username }: { id?: number; username?: string }) {
-  //   const user = await this.databaseService.employee.findUnique({
-  //     where: { id, username },
-  //     select: {
-  //       id: true,
-  //       username: true,
-  //       role: true,
-  //       email: true,
-  //       password: true,
-  //     },
-  //   });
-
-  //   if (!user) {
-  //     throw new UnauthorizedException('User not found');
-  //   }
-
-  //   return user;
-  // }
-  async findOne({ id, username }: { id?: number; username?: string }) {
-    let where: any = {};
-
-    if (id !== undefined) {
-      where.id = id;
-    } else if (username !== undefined) {
-      where.username = username;
-    } else {
+  // Оновлений метод findOne
+  async findOne({
+    id,
+    username,
+    email,
+  }: {
+    id?: number;
+    username?: string;
+    email?: string;
+  }) {
+    if (!id && !username && !email) {
       throw new UnauthorizedException('No identifier provided');
+    }
+
+    let where: Prisma.EmployeeWhereUniqueInput;
+
+    if (id) {
+      where = { id };
+    } else if (username && typeof username === 'string') {
+      where = { username };
+    } else if (email && typeof email === 'string') {
+      where = { email };
+    } else {
+      throw new UnauthorizedException('Invalid identifier provided');
     }
 
     const user = await this.databaseService.employee.findUnique({
@@ -137,6 +153,7 @@ export class UsersService {
     return user;
   }
 
+  // Метод для створення користувача через Google
   async createFromGoogle(googleUser: any) {
     // Перевіряємо, чи вже існує користувач з таким email
     const existingUser = await this.databaseService.employee.findUnique({
@@ -148,7 +165,7 @@ export class UsersService {
     }
 
     const generatedUsername = googleUser.email.split('@')[0] + Date.now();
-    const randomPassword = Math.random().toString(36).slice(-10);
+    const randomPassword = crypto.randomBytes(16).toString('hex'); // Використовуємо криптографічно безпечний пароль
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
     return this.databaseService.employee.create({

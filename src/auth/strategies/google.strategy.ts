@@ -7,12 +7,14 @@ import { Request } from 'express';
 import { log } from 'node:console';
 import { console } from 'node:inspector';
 import { VerifiedCallback, VerifyCallback } from 'passport-jwt';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
     @Inject(googleOauthConfig.KEY)
     private googleConfiguration: ConfigType<typeof googleOauthConfig>,
+    private authService: AuthService,
   ) {
     if (
       !googleConfiguration.clientID ||
@@ -31,24 +33,21 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
- async validate(
-  request: Request,
-  accessToken: string,
-  refreshToken: string,
-  profile: any,
-  done: VerifiedCallback,
-) {
-  console.log({ profile });
+  async validate(
+    request: Request,
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: VerifiedCallback,
+  ) {
+    const user = await this.authService.validateGoogleUser({
+      email: profile.emails?.[0]?.value,
+      name: profile.displayName,
+      password: '', // Google OAuth не передає пароль
+      role: 'INTERN',
+      username: '',
+    });
 
-  const userData = {
-    email: profile.emails?.[0]?.value,
-    name: profile.displayName,
-    picture: profile.photos[0].value,
-    provider: profile.provider,
-    googleId: profile.id,
-  };
-
-  done(null, userData);
-}
-
+    done(null, user);
+  }
 }

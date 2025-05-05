@@ -8,6 +8,7 @@ import refreshJwtConfig from './config/refresh-jwt.config';
 import { ConfigType } from '@nestjs/config';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateGoogleUserDto } from 'src/users/dto/create-google-user';
 
 @Injectable()
 export class AuthService {
@@ -124,5 +125,23 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  // async validateJwtUser(userId: number) {
+  //   const user = await this.usersService.findOne(userId);
+  //   if (!user) throw new UnauthorizedException("User not found!");
+  //   const currentUser: CurrenUser = { id: user.id, role: user.role }
+  //   return currentUser;
+  // }
+
+  async validateGoogleUser(googleUser: CreateGoogleUserDto) {
+    const user = await this.usersService.findByEmail(googleUser.email);
+    if (user) return user;
+
+    return await this.usersService.create({
+      ...googleUser,
+      username: googleUser.email.split('@')[0],
+      password: crypto.randomUUID(), // або генеруй temp-password
+    });
   }
 }

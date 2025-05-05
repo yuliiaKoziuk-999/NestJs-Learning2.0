@@ -67,7 +67,7 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.signIn(
-      req.user.username,
+      req.user.id,
       req.user.password,
     );
     res.redirect(`http://localhost:5173?token=${response.access_token}`);
