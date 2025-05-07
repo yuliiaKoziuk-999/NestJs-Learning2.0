@@ -17,13 +17,11 @@ import { ConfigModule } from '@nestjs/config';
     UsersModule,
     DatabaseModule,
     EmployeesModule,
-    ConfigModule.forFeature(googleOauthConfig),
     ConfigModule.forRoot({
-      isGlobal: true, // щоб не імпортувати в кожен модуль
-      envFilePath: '.env', // за замовчуванням, але краще явно
-      load: [googleOauthConfig],
+      isGlobal: true, // щоб конфігурація була доступна у всіх модулях
+      envFilePath: '.env', // явно вказуємо файл .env
+      load: [googleOauthConfig], // завантажуємо конфігурацію googleOauthConfig
     }),
-
     ThrottlerModule.forRoot([
       {
         name: 'short',
@@ -37,9 +35,8 @@ import { ConfigModule } from '@nestjs/config';
       },
     ]),
     MyLoggerModule,
-    AuthModule, // <-- залишений один раз
+    AuthModule,
   ],
-
   controllers: [AppController],
   providers: [
     AppService,

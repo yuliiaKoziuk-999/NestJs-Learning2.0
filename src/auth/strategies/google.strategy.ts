@@ -4,10 +4,8 @@ import { ConfigType } from '@nestjs/config';
 import { Profile, Strategy } from 'passport-google-oauth20';
 import googleOauthConfig from '../config/google-oauth.config';
 import { Request } from 'express';
-import { log } from 'node:console';
-import { console } from 'node:inspector';
-import { VerifiedCallback, VerifyCallback } from 'passport-jwt';
 import { AuthService } from '../auth.service';
+import { VerifiedCallback } from 'passport-jwt';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -42,6 +40,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   ): Promise<void> {
     const email = profile.emails?.[0]?.value;
 
+    // Перевірка наявності публічного email
     if (!email) {
       return done(
         new UnauthorizedException(
@@ -51,14 +50,21 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       );
     }
 
-    const user = await this.authService.validateGoogleUser({
-      email,
-      name: profile.displayName,
-      password: '',
-      role: 'INTERN',
-      username: '',
-    });
+    try {
+      // Перевірка користувача у системі
+      const user = await this.authService.validateGoogleUser({
+        email,
+        name: profile.displayName,
+        password: '', // Можливо, варто уточнити, чому пароль порожній
+        role: 'INTERN',
+        username: '',
+      });
 
-    return done(null, user);
+      return done(null, user);
+    } catch (error) {
+      // Логування помилок
+      console.error('Error validating Google user:', error);
+      return done(error, false);
+    }
   }
 }

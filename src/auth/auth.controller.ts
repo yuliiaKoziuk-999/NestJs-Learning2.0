@@ -74,11 +74,13 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
-    const response = await this.authService.signIn(
-      req.user.email,
-      req.user.name,
+    const response = await this.authService.signInWithGoogle(req.user);
+    const accessToken = response.accessToken;
+    const refreshToken = response.refreshToken;
+
+    res.redirect(
+      `http://localhost:5173/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
     );
-    res.redirect(`http://localhost:5173?token=${response.access_token}`);
   }
 
   @Post()

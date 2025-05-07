@@ -46,9 +46,18 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return this.databaseService.employee.findUnique({
+    const user = await this.databaseService.employee.findUnique({
       where: { email },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        email: true,
+        password: true,
+      },
     });
+
+    return user;
   }
 
   // Додаємо цей метод для отримання користувача за ID
@@ -119,20 +128,40 @@ export class UsersService {
     username?: string;
     email?: string;
   }) {
-    if (!id && !username && !email) {
-      throw new UnauthorizedException('No identifier provided');
+    const identifiers = [id, username, email].filter(Boolean);
+    // if (!id && !username && !email) {
+    //   throw new UnauthorizedException('No identifier provided');
+    // }
+    if (identifiers.length !== 1) {
+      throw new UnauthorizedException(
+        'Exactly one identifier must be provided',
+      );
     }
+
+    // Очищення вхідних даних
+    const cleanEmail = email?.trim();
+    const cleanUsername = username?.trim();
 
     let where: Prisma.EmployeeWhereUniqueInput;
 
+    // if (id) {
+    //   where = { id };
+    // } else if (username && typeof username === 'string') {
+    //   where = { username };
+    // } else if (email && typeof email === 'string') {
+    //   where = { email };
+    // } else {
+    //   throw new UnauthorizedException('Invalid identifier provided');
+    // }
+
     if (id) {
       where = { id };
-    } else if (username && typeof username === 'string') {
-      where = { username };
-    } else if (email && typeof email === 'string') {
-      where = { email };
+    } else if (cleanUsername) {
+      where = { username: cleanUsername };
+    } else if (cleanEmail) {
+      where = { email: cleanEmail };
     } else {
-      throw new UnauthorizedException('Invalid identifier provided');
+      throw new UnauthorizedException('Invalid identifier');
     }
 
     const user = await this.databaseService.employee.findUnique({
@@ -146,36 +175,24 @@ export class UsersService {
       },
     });
 
+    console.log('Searching for user with', { id, username, email });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('User not FOUND');
     }
 
     return user;
   }
 
   // Метод для створення користувача через Google
-  async createFromGoogle(googleUser: any) {
-    // Перевіряємо, чи вже існує користувач з таким email
-    const existingUser = await this.databaseService.employee.findUnique({
-      where: { email: googleUser.email },
-    });
+  async findOrCreateGoogleUser(googleUser: any) {
+    const existingUser = await this.findByEmail(googleUser.email);
+    if (existingUser) return existingUser;
 
-    if (existingUser) {
-      return existingUser;
-    }
-
-    const generatedUsername = googleUser.email.split('@')[0] + Date.now();
-    const randomPassword = crypto.randomBytes(16).toString('hex'); // Використовуємо криптографічно безпечний пароль
-    const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
-    return this.databaseService.employee.create({
-      data: {
-        email: googleUser.email,
-        name: googleUser.name,
-        username: generatedUsername,
-        password: hashedPassword,
-        role: Role.ENGINEER,
-      },
+    return this.create({
+      ...googleUser,
+      username: googleUser.username ?? googleUser.email.split('@')[0],
+      password: crypto.randomUUID(),
+      authProvider: 'google',
     });
   }
 

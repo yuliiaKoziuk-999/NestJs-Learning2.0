@@ -1,4 +1,9 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UsersService } from 'src/users/users.service';
@@ -44,7 +49,9 @@ export class AuthService {
       // Перевірка, чи існує вже користувач за email
       const existingUser = await this.usersService.findByEmail(email);
       if (existingUser) {
-        throw new Error('Користувач з такою електронною адресою вже існує');
+        throw new ConflictException(
+          'Користувач з такою електронною адресою вже існує',
+        );
       }
 
       // Хешування паролю
@@ -77,14 +84,14 @@ export class AuthService {
   }
 
   async signIn(
-    username: string,
+    email: string,
     pass: string,
   ): Promise<{ access_token: string; refresh_token: string; id: number }> {
     // Шукаємо користувача по username
-    const user = await this.usersService.findOne({ username });
+    const user = await this.usersService.findByEmail(email);
 
     // Перевіряємо, чи існує користувач і чи співпадають паролі
-    if (!user || !(await bcrypt.compare(pass, user.password))) {
+    if (!user?.password || !(await bcrypt.compare(pass, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -116,22 +123,8 @@ export class AuthService {
   }
 
   async signInWithGoogle(googleUser: any) {
-    const payload = {
-      sub: googleUser.googleId,
-      email: googleUser.email,
-      name: googleUser.name,
-    };
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get('refreshJwt.refreshTokenSecret'),
-      expiresIn: this.configService.get('refreshJwt.refreshTokenExpiresIn'),
-    });
-
-    return {
-      user: payload,
-      accessToken,
-      refreshToken,
-    };
+    const user = await this.usersService.findOrCreateGoogleUser(googleUser); // краще винести логіку в service
+    return this.generateTokens(user.id);
   }
 
   async refreshToken(userId: number) {
@@ -203,7 +196,8 @@ export class AuthService {
     return await this.usersService.create({
       ...googleUser,
       username: googleUser.username ?? googleUser.email.split('@')[0],
-      password: googleUser.password ?? crypto.randomUUID(), // або згенеруй тимчасовий пароль
+      password: crypto.randomUUID(), // пароль буде збережений, але не використовується
+      authProvider: 'google',
     });
   }
 }
