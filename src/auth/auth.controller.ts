@@ -25,6 +25,8 @@ import { Role } from './enum/role.enum';
 import { IsPublic } from './decorators/isPublicDecorator';
 import { RolesGuard } from '../guards/role/roles.guard';
 import { GoogleAuthGuard } from 'src/guards/google-auth/google-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth-guard.guard';
+import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 
 @Controller('auth')
 @Injectable()
@@ -42,6 +44,12 @@ export class AuthController {
   @Post('login')
   signIn(@Body() signInDTO: SignInDTO) {
     return this.authService.signIn(signInDTO.username, signInDTO.password);
+  }
+
+  @UseGuards(RefreshAuthGuard)
+  @Post('refresh')
+  refreshToken(@Req() req) {
+    return this.authService.refreshToken(req.user.id);
   }
 
   @UseGuards(AuthGuard)
@@ -67,8 +75,8 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.signIn(
-      req.user.id,
-      req.user.password,
+      req.user.email,
+      req.user.name,
     );
     res.redirect(`http://localhost:5173?token=${response.access_token}`);
   }

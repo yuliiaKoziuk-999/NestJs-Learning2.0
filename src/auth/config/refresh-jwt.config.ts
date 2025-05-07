@@ -1,10 +1,13 @@
 import { registerAs } from '@nestjs/config';
-import { JwtModuleOptions, JwtSignOptions } from '@nestjs/jwt';
+import { JwtSignOptions } from '@nestjs/jwt';
 
 export default registerAs(
-  'jwt',
+  'refresh-jwt',
   (): JwtSignOptions => ({
+    // Секрет для генерації refresh токена
     secret: process.env.REFRESH_JWT_SECRET,
+
+    // Термін дії токена, наприклад '7d' для 7 днів
     expiresIn: process.env.REFRESH_JWT_EXPIRE_IN,
   }),
 );

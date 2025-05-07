@@ -9,6 +9,13 @@ import { ConfigType } from '@nestjs/config';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { CreateGoogleUserDto } from 'src/users/dto/create-google-user';
+import { AuthJwtPayload } from './types/auth-jwtPayload';
+import * as argon2 from 'argon2';
+
+interface CurrentUser {
+  id: number;
+  role: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -127,21 +134,76 @@ export class AuthService {
     };
   }
 
-  // async validateJwtUser(userId: number) {
-  //   const user = await this.usersService.findOne(userId);
-  //   if (!user) throw new UnauthorizedException("User not found!");
-  //   const currentUser: CurrenUser = { id: user.id, role: user.role }
-  //   return currentUser;
-  // }
+  async refreshToken(userId: number) {
+    // Генерація нових токенів
+    const { accessToken, refreshToken } = await this.generateTokens(userId);
 
-  async validateGoogleUser(googleUser: CreateGoogleUserDto) {
+    // Хешування refreshToken
+    const hashedRefreshToken = await argon2.hash(refreshToken);
+
+    // Оновлення хешованого refreshToken у базі даних
+    await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
+
+    // Повернення нових токенів
+    return {
+      id: userId,
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async generateTokens(userId: number) {
+    // Створення payload для обох токенів
+    const payload: AuthJwtPayload = { sub: userId };
+
+    // Генерація accessToken та refreshToken асинхронно
+    const [accessToken, refreshToken] = await Promise.all([
+      // Генерація accessToken
+      this.jwtService.signAsync(payload),
+
+      // Генерація refreshToken з використанням окремої конфігурації (наприклад, з іншою експірацією)
+      this.jwtService.signAsync(payload, this.refreshTokenConfig),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async validateRefreshToken(userId: number, refreshToken: string) {
+    const user = await this.userService.findOne(userId);
+    if (!user || !user.hashedRefreshToken)
+      throw new UnauthorizedException('Invalid Refresh Token');
+
+    const refreshTokenMatches = await argon2.verify(
+      user.hashedRefreshToken,
+      refreshToken,
+    );
+    if (!refreshTokenMatches)
+      throw new UnauthorizedException('Invalid Refresh Token');
+
+    return { id: userId };
+  }
+
+  async signOut(userId: number) {
+    await this.userService.updateHashedRefreshToken(userId, null);
+  }
+
+  async validateJwtUser(userId: number) {
+    const user = await this.userService.findOne(userId);
+    if (!user) throw new UnauthorizedException('User not found!');
+    const currentUser: CurrentUser = { id: user.id, role: user.role };
+    return currentUser;
+  }
+  async validateGoogleUser(googleUser: CreateUserDto) {
     const user = await this.usersService.findByEmail(googleUser.email);
     if (user) return user;
 
     return await this.usersService.create({
       ...googleUser,
-      username: googleUser.email.split('@')[0],
-      password: crypto.randomUUID(), // або генеруй temp-password
+      username: googleUser.username ?? googleUser.email.split('@')[0],
+      password: googleUser.password ?? crypto.randomUUID(), // або згенеруй тимчасовий пароль
     });
   }
 }

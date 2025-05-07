@@ -9,12 +9,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GoogleStrategy } from './strategies/google.strategy';
 import jwtConfig from './config/jwt.config';
 import refreshJwtConfig from './config/refresh-jwt.config';
+import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
 
-    // Jwt for access token
+    // ✅ Список конфігів має бути до JwtModule
+    ConfigModule.forFeature(jwtConfig),
+    ConfigModule.forFeature(refreshJwtConfig),
+
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => {
         const jwtConfig = configService.get<JwtModuleOptions>('jwt');
@@ -25,12 +29,9 @@ import refreshJwtConfig from './config/refresh-jwt.config';
       },
       inject: [ConfigService],
     }),
-
-    ConfigModule.forFeature(jwtConfig),
-    ConfigModule.forFeature(refreshJwtConfig), // just load it, don't pass to JwtModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, GoogleStrategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy, RefreshAuthGuard],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

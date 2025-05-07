@@ -1,7 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigType } from '@nestjs/config';
-import { Strategy } from 'passport-google-oauth20';
+import { Profile, Strategy } from 'passport-google-oauth20';
 import googleOauthConfig from '../config/google-oauth.config';
 import { Request } from 'express';
 import { log } from 'node:console';
@@ -37,17 +37,28 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     request: Request,
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: Profile,
     done: VerifiedCallback,
-  ) {
+  ): Promise<void> {
+    const email = profile.emails?.[0]?.value;
+
+    if (!email) {
+      return done(
+        new UnauthorizedException(
+          'Google account does not have a public email',
+        ),
+        false,
+      );
+    }
+
     const user = await this.authService.validateGoogleUser({
-      email: profile.emails?.[0]?.value,
+      email,
       name: profile.displayName,
-      password: '', // Google OAuth не передає пароль
+      password: '',
       role: 'INTERN',
       username: '',
     });
 
-    done(null, user);
+    return done(null, user);
   }
 }
