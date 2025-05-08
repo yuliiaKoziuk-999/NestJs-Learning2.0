@@ -31,5 +31,5 @@ export class CreateUserDto {
 
   @IsString()
   @IsOptional()
-  authProvider?: 'local' | 'google';
+  authProvider?: 'local' | 'google' | 'facebook';
 }

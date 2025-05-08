@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { MyLoggerModule } from './my-logger/my-logger.module';
 import { AuthModule } from './auth/auth.module';
 import googleOauthConfig from './auth/config/google-oauth.config';
+import facebookOauthConfig from './auth/config/facebook-oath.config';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -20,7 +21,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true, // щоб конфігурація була доступна у всіх модулях
       envFilePath: '.env', // явно вказуємо файл .env
-      load: [googleOauthConfig], // завантажуємо конфігурацію googleOauthConfig
+      load: [googleOauthConfig, facebookOauthConfig], // завантажуємо конфігурацію googleOauthConfig
     }),
     ThrottlerModule.forRoot([
       {

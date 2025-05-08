@@ -16,7 +16,7 @@ model Employee{
     updatedAt DateTime @updatedAt
     username String @unique
     password String 
-
+    authProvider String?
 }
 
 enum Role {

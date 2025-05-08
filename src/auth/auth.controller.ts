@@ -27,6 +27,7 @@ import { RolesGuard } from '../guards/role/roles.guard';
 import { GoogleAuthGuard } from 'src/guards/google-auth/google-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth-guard.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
+import { FacebookAuthGuard } from './guards/facebook-auth/facebook-auth.guard';
 
 @Controller('auth')
 @Injectable()
@@ -75,6 +76,24 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.signInWithGoogle(req.user);
+    const accessToken = response.accessToken;
+    const refreshToken = response.refreshToken;
+
+    res.redirect(
+      `http://localhost:5173/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
+    );
+  }
+
+  @Public()
+  @UseGuards(FacebookAuthGuard)
+  @Get('facebook/login')
+  facebookLogin() {}
+
+  @Public()
+  @UseGuards(FacebookAuthGuard)
+  @Get('facebook/callback')
+  async facebookCallback(@Req() req, @Res() res) {
+    const response = await this.authService.signInWithFacebook(req.user);
     const accessToken = response.accessToken;
     const refreshToken = response.refreshToken;
 

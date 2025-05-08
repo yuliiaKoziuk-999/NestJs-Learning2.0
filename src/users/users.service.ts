@@ -143,17 +143,6 @@ export class UsersService {
     const cleanUsername = username?.trim();
 
     let where: Prisma.EmployeeWhereUniqueInput;
-
-    // if (id) {
-    //   where = { id };
-    // } else if (username && typeof username === 'string') {
-    //   where = { username };
-    // } else if (email && typeof email === 'string') {
-    //   where = { email };
-    // } else {
-    //   throw new UnauthorizedException('Invalid identifier provided');
-    // }
-
     if (id) {
       where = { id };
     } else if (cleanUsername) {
@@ -193,6 +182,18 @@ export class UsersService {
       username: googleUser.username ?? googleUser.email.split('@')[0],
       password: crypto.randomUUID(),
       authProvider: 'google',
+    });
+  }
+
+  async findOrCreateFacebookUser(facebookUser: any) {
+    const existingUser = await this.findByEmail(facebookUser.email);
+    if (existingUser) return existingUser;
+
+    return this.create({
+      ...facebookUser,
+      username: facebookUser.username ?? facebookUser.email.split('@')[0],
+      password: crypto.randomUUID(),
+      authProvider: 'facebook',
     });
   }
 

@@ -127,6 +127,11 @@ export class AuthService {
     return this.generateTokens(user.id);
   }
 
+  async signInWithFacebook(facebookUser: any) {
+    const user = await this.usersService.findOrCreateFacebookUser(facebookUser); // краще винести логіку в service
+    return this.generateTokens(user.id);
+  }
+
   async refreshToken(userId: number) {
     // Генерація нових токенів
     const { accessToken, refreshToken } = await this.generateTokens(userId);
@@ -198,6 +203,18 @@ export class AuthService {
       username: googleUser.username ?? googleUser.email.split('@')[0],
       password: crypto.randomUUID(), // пароль буде збережений, але не використовується
       authProvider: 'google',
+    });
+  }
+
+  async validateFacebookUser(facebookUser: CreateUserDto) {
+    const user = await this.usersService.findByEmail(facebookUser.email);
+    if (user) return user;
+
+    return await this.usersService.create({
+      ...facebookUser,
+      username: facebookUser.username ?? facebookUser.email.split('@')[0],
+      password: crypto.randomUUID(), // пароль буде збережений, але не використовується
+      authProvider: 'facebook',
     });
   }
 }

@@ -10,14 +10,17 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import jwtConfig from './config/jwt.config';
 import refreshJwtConfig from './config/refresh-jwt.config';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
+import facebookOauthConfig from '../auth/config/facebook-oath.config';
+import googleOauthConfig from './config/google-oauth.config';
+import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
-
-    // ✅ Список конфігів має бути до JwtModule
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshJwtConfig),
+    ConfigModule.forFeature(facebookOauthConfig),
+    ConfigModule.forFeature(googleOauthConfig),
 
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => {
@@ -31,7 +34,13 @@ import { RefreshAuthGuard } from './guards/refresh-auth.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, GoogleStrategy, RefreshAuthGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    GoogleStrategy,
+    RefreshAuthGuard,
+    FacebookStrategy,
+  ],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
