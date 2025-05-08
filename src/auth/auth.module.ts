@@ -34,13 +34,7 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    GoogleStrategy,
-    RefreshAuthGuard,
-    FacebookStrategy,
-  ],
+  providers: [AuthService, JwtStrategy, GoogleStrategy, FacebookStrategy],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

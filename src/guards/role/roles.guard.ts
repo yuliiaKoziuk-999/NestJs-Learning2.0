@@ -24,7 +24,6 @@ export class RolesGuard implements CanActivate {
     console.log({ user });
     console.log('requiredRoles:', requiredRoles);
 
-    // ✅ Додано захист: якщо ролі не вимагаються — пропускаємо далі
     if (!requiredRoles || requiredRoles.length === 0) return true;
 
     if (!user || !user.role) {

@@ -5,31 +5,31 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { jwtConstants } from './constans';
+import { jwtConstants } from '../constans';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import { IS_PUBLIC_KEY } from 'src/auth/decorators/public.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
-  ) {} // Додаємо конструктор для DI
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // підтримку публічних маршрутів через метадані
-    const isPublic = this.reflector.get<boolean>(
-      'isPublic',
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
-    );
-
+      context.getClass(),
+    ]);
+    console.log(`ISPUBLIC ${isPublic}`);
     if (isPublic) {
       return true;
     }
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
-    console.log(token);
-    console.log(request);
+    console.log(`TOKEN ${token}`);
+    console.log(`REQUEST ${request}`);
 
     if (!token) {
       throw new UnauthorizedException('Token not found');
@@ -38,10 +38,9 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: jwtConstants.secret,
       });
-      request.user = payload;
-      // request['user'] = payload; // Додаємо розпізнаного користувача до запиту
       console.log('Verified payload:', payload);
-    } catch {
+    } catch (error) {
+      console.log(`Error ${error}`);
       throw new UnauthorizedException('Invalid token');
     }
     return true;
@@ -52,10 +51,6 @@ export class AuthGuard implements CanActivate {
     if (!authHeader || !authHeader.startsWith('Bearer')) {
       return undefined; // Якщо заголовок відсутній
     }
-
-    // const [type, token] = authHeader?.split(' ') ?? [];
-    // return type === 'Bearer' ? token : undefined;
-
     return authHeader.split(' ')[1];
   }
 }

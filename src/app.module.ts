@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import googleOauthConfig from './auth/config/google-oauth.config';
 import facebookOauthConfig from './auth/config/facebook-oath.config';
 import { ConfigModule } from '@nestjs/config';
+import jwtConfig from './auth/config/jwt.config';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true, // щоб конфігурація була доступна у всіх модулях
       envFilePath: '.env', // явно вказуємо файл .env
-      load: [googleOauthConfig, facebookOauthConfig], // завантажуємо конфігурацію googleOauthConfig
+      load: [jwtConfig, googleOauthConfig, facebookOauthConfig], // завантажуємо конфігурацію googleOauthConfig
     }),
     ThrottlerModule.forRoot([
       {

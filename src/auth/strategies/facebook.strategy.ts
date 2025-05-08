@@ -39,7 +39,6 @@ export class FacebookStrategy extends PassportStrategy(Strategy) {
   ): Promise<void> {
     const email = profile.emails?.[0]?.value;
 
-    // Перевірка наявності публічного email
     if (!email) {
       return done(
         new UnauthorizedException(
@@ -48,20 +47,18 @@ export class FacebookStrategy extends PassportStrategy(Strategy) {
         false,
       );
     }
-    // !!!!!validateFacebookUser;
+
     try {
-      // Перевірка користувача у системі
       const user = await this.authService.validateFacebookUser({
         email,
         name: profile.displayName,
-        password: '', // Можливо, варто уточнити, чому пароль порожній
+        password: '',
         role: 'INTERN',
         username: '',
       });
 
       return done(null, user);
     } catch (error) {
-      // Логування помилок
       console.error('Error validating Facebook user:', error);
       return done(error, false);
     }

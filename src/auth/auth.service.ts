@@ -5,7 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -13,7 +12,6 @@ import refreshJwtConfig from './config/refresh-jwt.config';
 import { ConfigType } from '@nestjs/config';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { CreateGoogleUserDto } from 'src/users/dto/create-google-user';
 import { AuthJwtPayload } from './types/auth-jwtPayload';
 import * as argon2 from 'argon2';
 
@@ -54,16 +52,13 @@ export class AuthService {
         );
       }
 
-      // Хешування паролю
       const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Формуємо об'єкт CreateUserDto
       const createUserDto: CreateUserDto = {
         name: username,
         email,
         username,
         password: hashedPassword,
-        role: 'INTERN', // можна винести в константу або параметризувати
+        role: 'INTERN',
       };
 
       // Створення користувача
@@ -87,23 +82,32 @@ export class AuthService {
     email: string,
     pass: string,
   ): Promise<{ access_token: string; refresh_token: string; id: number }> {
-    // Шукаємо користувача по username
+    console.log('Trying to find user by email:', email);
     const user = await this.usersService.findByEmail(email);
 
-    // Перевіряємо, чи існує користувач і чи співпадають паролі
     if (!user?.password || !(await bcrypt.compare(pass, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Формуємо payload для JWT
     const payload = { sub: user.id, username: user.username, role: user.role };
 
-    const access_token = await this.jwtService.signAsync(payload);
+    const access_token = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
+    });
 
     const refresh_token = await this.jwtService.signAsync(payload, {
       secret: process.env.REFRESH_JWT_SECRET,
       expiresIn: process.env.REFRESH_JWT_EXPIRE_IN || '7d',
     });
+
+    await this.jwtService.verifyAsync(access_token, {
+      secret: process.env.JWT_SECRET,
+    });
+
+    await this.jwtService.verifyAsync(refresh_token, {
+      secret: process.env.REFRESH_JWT_SECRET,
+    });
+
     return {
       id: user.id,
       access_token,
@@ -133,16 +137,12 @@ export class AuthService {
   }
 
   async refreshToken(userId: number) {
-    // Генерація нових токенів
     const { accessToken, refreshToken } = await this.generateTokens(userId);
 
-    // Хешування refreshToken
     const hashedRefreshToken = await argon2.hash(refreshToken);
 
-    // Оновлення хешованого refreshToken у базі даних
     await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
 
-    // Повернення нових токенів
     return {
       id: userId,
       accessToken,
@@ -151,15 +151,10 @@ export class AuthService {
   }
 
   async generateTokens(userId: number) {
-    // Створення payload для обох токенів
     const payload: AuthJwtPayload = { sub: userId };
 
-    // Генерація accessToken та refreshToken асинхронно
     const [accessToken, refreshToken] = await Promise.all([
-      // Генерація accessToken
       this.jwtService.signAsync(payload),
-
-      // Генерація refreshToken з використанням окремої конфігурації (наприклад, з іншою експірацією)
       this.jwtService.signAsync(payload, this.refreshTokenConfig),
     ]);
 

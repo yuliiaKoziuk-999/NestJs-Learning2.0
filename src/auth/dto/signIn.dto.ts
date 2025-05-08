@@ -10,6 +10,10 @@ export class SignInDTO {
   password: string;
   roles: Role[];
 
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
   @IsInt()
   @IsOptional()
   page?: number = 1;

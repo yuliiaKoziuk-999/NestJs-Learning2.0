@@ -40,7 +40,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   ): Promise<void> {
     const email = profile.emails?.[0]?.value;
 
-    // Перевірка наявності публічного email
     if (!email) {
       return done(
         new UnauthorizedException(
@@ -51,18 +50,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     }
 
     try {
-      // Перевірка користувача у системі
       const user = await this.authService.validateGoogleUser({
         email,
         name: profile.displayName,
-        password: '', // Можливо, варто уточнити, чому пароль порожній
+        password: '',
         role: 'INTERN',
         username: '',
       });
 
       return done(null, user);
     } catch (error) {
-      // Логування помилок
       console.error('Error validating Google user:', error);
       return done(error, false);
     }

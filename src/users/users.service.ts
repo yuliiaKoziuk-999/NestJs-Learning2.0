@@ -46,6 +46,10 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
+    //++
+    if (!email) {
+      throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
+    }
     const user = await this.databaseService.employee.findUnique({
       where: { email },
       select: {
@@ -164,7 +168,6 @@ export class UsersService {
       },
     });
 
-    console.log('Searching for user with', { id, username, email });
     if (!user) {
       throw new UnauthorizedException('User not FOUND');
     }
