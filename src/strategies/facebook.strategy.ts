@@ -2,9 +2,9 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-facebook';
 import { VerifiedCallback } from 'passport-jwt';
-import { AuthService } from '../auth.service';
 import { ConfigType } from '@nestjs/config';
 import facebookOathConfig from '../config/facebook-oath.config';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy) {

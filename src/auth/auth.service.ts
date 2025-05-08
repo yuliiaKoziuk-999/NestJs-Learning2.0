@@ -4,15 +4,15 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
+import { CreateAuthDto } from '../dto/create-auth.dto';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import refreshJwtConfig from './config/refresh-jwt.config';
+import refreshJwtConfig from '../config/refresh-jwt.config';
 import { ConfigType } from '@nestjs/config';
 import { compare } from 'bcrypt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { AuthJwtPayload } from './types/auth-jwtPayload';
+import { AuthJwtPayload } from '../types/auth-jwtPayload';
 import * as argon2 from 'argon2';
 
 interface CurrentUser {

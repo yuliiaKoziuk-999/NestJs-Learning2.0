@@ -4,15 +4,15 @@ import { AuthController } from './auth.controller';
 
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
-import { JwtStrategy } from '../auth/strategies/jwt.strategy';
+import { JwtStrategy } from '../strategies/jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { GoogleStrategy } from './strategies/google.strategy';
-import jwtConfig from './config/jwt.config';
-import refreshJwtConfig from './config/refresh-jwt.config';
-import { RefreshAuthGuard } from './guards/refresh-auth.guard';
-import facebookOauthConfig from '../auth/config/facebook-oath.config';
-import googleOauthConfig from './config/google-oauth.config';
-import { FacebookStrategy } from './strategies/facebook.strategy';
+import { GoogleStrategy } from '../strategies/google.strategy';
+import jwtConfig from '../config/jwt.config';
+import refreshJwtConfig from '../config/refresh-jwt.config';
+import { RefreshAuthGuard } from '../guards/refresh-auth.guard';
+import facebookOauthConfig from '../config/facebook-oath.config';
+import googleOauthConfig from '../config/google-oauth.config';
+import { FacebookStrategy } from '../strategies/facebook.strategy';
 
 @Module({
   imports: [

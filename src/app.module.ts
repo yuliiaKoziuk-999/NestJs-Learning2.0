@@ -9,10 +9,10 @@ import { APP_GUARD } from '@nestjs/core';
 // import { MyLoggerModule } from './my-logger/my-logger.module';
 import { MyLoggerModule } from './my-logger/my-logger.module';
 import { AuthModule } from './auth/auth.module';
-import googleOauthConfig from './auth/config/google-oauth.config';
-import facebookOauthConfig from './auth/config/facebook-oath.config';
+import facebookOauthConfig from './config/facebook-oath.config';
 import { ConfigModule } from '@nestjs/config';
-import jwtConfig from './auth/config/jwt.config';
+import jwtConfig from './config/jwt.config';
+import googleOauthConfig from './config/google-oauth.config';
 
 @Module({
   imports: [

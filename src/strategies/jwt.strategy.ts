@@ -1,19 +1,12 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { jwtConstants } from '../constans';
+import { jwtConstants } from '../common/constans';
 import { UsersService } from 'src/users/users.service';
-import { ConfigType } from '@nestjs/config';
-import type refreshJwtConfigType from '../config/refresh-jwt.config'; // 👈 ключове слово `type`
-import refreshJwtConfig from '../config/refresh-jwt.config';
-//TODO rename file
+
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'REFRESH-JWT') {
-  constructor(
-    private usersService: UsersService,
-    @Inject(refreshJwtConfig.KEY)
-    private refreshJwtConfig: ConfigType<typeof refreshJwtConfigType>,
-  ) {
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor(private usersService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,

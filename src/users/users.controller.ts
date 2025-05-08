@@ -17,10 +17,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ListDTO } from './dto/listUsers.dto';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from '../auth/enum/role.enum';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from '../enum/role.enum';
 import { RolesGuard } from 'src/guards/role/roles.guard';
-import { AuthGuard } from 'src/auth/guards/auth.guards';
+import { AuthGuard } from 'src/guards/auth.guards';
 
 @Controller('users') //users
 @UseGuards(AuthGuard)
