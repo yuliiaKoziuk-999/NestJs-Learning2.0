@@ -88,29 +88,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, username: user.username, role: user.role };
-
-    const accessToken = await this.jwtService.signAsync(payload, {
-      secret: process.env.JWT_SECRET,
-    });
-
-    const refresh_token = await this.jwtService.signAsync(payload, {
-      secret: process.env.REFRESH_JWT_SECRET,
-      expiresIn: process.env.REFRESH_JWT_EXPIRE_IN || '7d',
-    });
-
-    await this.jwtService.verifyAsync(accessToken, {
-      secret: process.env.JWT_SECRET,
-    });
-
-    await this.jwtService.verifyAsync(refresh_token, {
-      secret: process.env.REFRESH_JWT_SECRET,
-    });
+    const { accessToken, refreshToken } = await this.generateTokens(user.id);
 
     return {
       id: user.id,
       accessToken,
-      refresh_token,
+      refresh_token: refreshToken,
     };
   }
 
@@ -156,6 +139,15 @@ export class AuthService {
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(payload, this.refreshTokenConfig),
     ]);
+
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    await this.databaseService.employee.update({
+      where: { id: userId },
+      data: {
+        hashedRefreshToken,
+      },
+    });
 
     return {
       accessToken,
