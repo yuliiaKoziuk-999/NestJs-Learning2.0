@@ -16,6 +16,8 @@ model Employee{
     updatedAt DateTime @updatedAt
     username String @unique
     password String 
+    accessToken String? 
+    hashedRefreshToken String?
     authProvider String?
 }
 

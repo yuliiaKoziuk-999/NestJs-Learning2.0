@@ -13,15 +13,27 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
+  updateHashedRefreshToken(userId: number, hashedRefreshToken: string | null) {
+    throw new Error('Method not implemented.');
+  }
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createUserDto: CreateUserDto) {
-    const existingUser = await this.databaseService.employee.findUnique({
-      where: { email: createUserDto.email },
+    // Перевірка на існуючого користувача за username або email
+    const existingUser = await this.databaseService.employee.findFirst({
+      where: {
+        OR: [
+          {
+            username:
+              createUserDto.username || createUserDto.email.split('@')[0],
+          },
+          { email: createUserDto.email },
+        ],
+      },
     });
 
     if (existingUser) {
-      throw new Error('User already exists');
+      throw new Error('User with this username or email already exists');
     }
 
     // Якщо користувач автентифікується через Google і пароль не передається
@@ -31,18 +43,33 @@ export class UsersService {
       hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     }
 
-    // Якщо username не надано, використовуємо email або генеруємо значення
-    const username =
-      createUserDto.username || createUserDto.email.split('@')[0]; // Наприклад, email до символу '@'
+    let username = createUserDto.username || createUserDto.email.split('@')[0];
+    let counter = 1;
+    while (
+      await this.databaseService.employee.findUnique({ where: { username } })
+    ) {
+      username = `${createUserDto.email.split('@')[0]}${counter++}`;
+    }
     const role = createUserDto.role || 'INTERN';
 
-    return this.databaseService.employee.create({
-      data: {
-        ...createUserDto,
-        password: hashedPassword,
-        role,
-      },
-    });
+    const name = createUserDto.name || 'Default Name'; // Тут ти можеш обрати підхід для заповнення name
+
+    try {
+      return this.databaseService.employee.create({
+        data: {
+          name,
+          username,
+          email: createUserDto.email,
+          password: hashedPassword,
+          role: createUserDto.role || 'INTERN',
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2002') {
+        throw new Error('Username already exists, please choose another one.');
+      }
+      throw error;
+    }
   }
 
   async findByEmail(email: string) {

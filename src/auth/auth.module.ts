@@ -13,6 +13,7 @@ import { RefreshAuthGuard } from '../guards/refresh-auth.guard';
 import facebookOauthConfig from '../config/facebook-oath.config';
 import googleOauthConfig from '../config/google-oauth.config';
 import { FacebookStrategy } from '../strategies/facebook.strategy';
+import { DatabaseModule } from 'src/database/database.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { FacebookStrategy } from '../strategies/facebook.strategy';
     ConfigModule.forFeature(refreshJwtConfig),
     ConfigModule.forFeature(facebookOauthConfig),
     ConfigModule.forFeature(googleOauthConfig),
+    DatabaseModule,
 
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => {

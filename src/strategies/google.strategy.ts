@@ -37,7 +37,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     refreshToken: string,
     profile: Profile,
     done: VerifiedCallback,
-  ): Promise<void> {
+  ): Promise<any> {
     const email = profile.emails?.[0]?.value;
 
     if (!email) {
@@ -58,6 +58,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         username: '',
       });
 
+      if (user) {
+        await this.authService.updatedAccessToken(user.id, accessToken);
+      }
       return done(null, user);
     } catch (error) {
       console.error('Error validating Google user:', error);

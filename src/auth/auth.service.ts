@@ -8,12 +8,13 @@ import { CreateAuthDto } from '../dto/create-auth.dto';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
+import * as crypto from 'crypto';
 import refreshJwtConfig from '../config/refresh-jwt.config';
 import { ConfigType } from '@nestjs/config';
-import { compare } from 'bcrypt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthJwtPayload } from '../types/auth-jwtPayload';
-import * as argon2 from 'argon2';
+import { DatabaseService } from 'src/database/database.service';
 
 interface CurrentUser {
   id: number;
@@ -22,21 +23,23 @@ interface CurrentUser {
 
 @Injectable()
 export class AuthService {
-  [x: string]: any;
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
     @Inject(refreshJwtConfig.KEY)
     private refreshTokenConfig: ConfigType<typeof refreshJwtConfig>,
+    private databaseService: DatabaseService,
   ) {}
 
   async validateUser(email: string, password: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new UnauthorizedException('User not Found');
-    const isPasswordMatch = await compare(password, user.password);
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
     return { id: user.id };
   }
 
@@ -44,7 +47,6 @@ export class AuthService {
     try {
       const { email, username, password } = createAuthDto;
 
-      // Перевірка, чи існує вже користувач за email
       const existingUser = await this.usersService.findByEmail(email);
       if (existingUser) {
         throw new ConflictException(
@@ -61,7 +63,6 @@ export class AuthService {
         role: 'INTERN',
       };
 
-      // Створення користувача
       const user = await this.usersService.create(createUserDto);
 
       return {
@@ -81,17 +82,15 @@ export class AuthService {
   async signIn(
     email: string,
     pass: string,
-  ): Promise<{ access_token: string; refresh_token: string; id: number }> {
-    console.log('Trying to find user by email:', email);
+  ): Promise<{ accessToken: string; refresh_token: string; id: number }> {
     const user = await this.usersService.findByEmail(email);
-
     if (!user?.password || !(await bcrypt.compare(pass, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const payload = { sub: user.id, username: user.username, role: user.role };
 
-    const access_token = await this.jwtService.signAsync(payload, {
+    const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_SECRET,
     });
 
@@ -100,7 +99,7 @@ export class AuthService {
       expiresIn: process.env.REFRESH_JWT_EXPIRE_IN || '7d',
     });
 
-    await this.jwtService.verifyAsync(access_token, {
+    await this.jwtService.verifyAsync(accessToken, {
       secret: process.env.JWT_SECRET,
     });
 
@@ -110,14 +109,13 @@ export class AuthService {
 
     return {
       id: user.id,
-      access_token,
+      accessToken,
       refresh_token,
     };
   }
 
   async getProfile(userId: number) {
     const user = await this.usersService.findById(userId);
-
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -127,21 +125,22 @@ export class AuthService {
   }
 
   async signInWithGoogle(googleUser: any) {
-    const user = await this.usersService.findOrCreateGoogleUser(googleUser); // краще винести логіку в service
+    const user = await this.usersService.findOrCreateGoogleUser(googleUser);
     return this.generateTokens(user.id);
   }
 
   async signInWithFacebook(facebookUser: any) {
-    const user = await this.usersService.findOrCreateFacebookUser(facebookUser); // краще винести логіку в service
+    const user = await this.usersService.findOrCreateFacebookUser(facebookUser);
     return this.generateTokens(user.id);
   }
 
   async refreshToken(userId: number) {
     const { accessToken, refreshToken } = await this.generateTokens(userId);
-
     const hashedRefreshToken = await argon2.hash(refreshToken);
-
-    await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
+    await this.usersService.updateHashedRefreshToken(
+      userId,
+      hashedRefreshToken,
+    );
 
     return {
       id: userId,
@@ -165,30 +164,37 @@ export class AuthService {
   }
 
   async validateRefreshToken(userId: number, refreshToken: string) {
-    const user = await this.userService.findOne(userId);
-    if (!user || !user.hashedRefreshToken)
+    const user = await this.usersService.findById(userId);
+    if (!user || !user.hashedRefreshToken) {
       throw new UnauthorizedException('Invalid Refresh Token');
+    }
 
     const refreshTokenMatches = await argon2.verify(
       user.hashedRefreshToken,
       refreshToken,
     );
-    if (!refreshTokenMatches)
+
+    if (!refreshTokenMatches) {
       throw new UnauthorizedException('Invalid Refresh Token');
+    }
 
     return { id: userId };
   }
 
   async signOut(userId: number) {
-    await this.userService.updateHashedRefreshToken(userId, null);
+    await this.usersService.updateHashedRefreshToken(userId, null);
   }
 
   async validateJwtUser(userId: number) {
-    const user = await this.userService.findOne(userId);
-    if (!user) throw new UnauthorizedException('User not found!');
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found!');
+    }
+
     const currentUser: CurrentUser = { id: user.id, role: user.role };
     return currentUser;
   }
+
   async validateGoogleUser(googleUser: CreateUserDto) {
     const user = await this.usersService.findByEmail(googleUser.email);
     if (user) return user;
@@ -196,7 +202,7 @@ export class AuthService {
     return await this.usersService.create({
       ...googleUser,
       username: googleUser.username ?? googleUser.email.split('@')[0],
-      password: crypto.randomUUID(), // пароль буде збережений, але не використовується
+      password: crypto.randomUUID(),
       authProvider: 'google',
     });
   }
@@ -208,8 +214,17 @@ export class AuthService {
     return await this.usersService.create({
       ...facebookUser,
       username: facebookUser.username ?? facebookUser.email.split('@')[0],
-      password: crypto.randomUUID(), // пароль буде збережений, але не використовується
+      password: crypto.randomUUID(),
       authProvider: 'facebook',
+    });
+  }
+
+  async updatedAccessToken(userId: number, accessToken: string) {
+    return this.databaseService.employee.update({
+      where: { id: userId },
+      data: {
+        accessToken: accessToken,
+      },
     });
   }
 }
