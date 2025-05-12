@@ -2,6 +2,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAuthDto } from '../dto/create-auth.dto';
@@ -109,7 +110,25 @@ export class AuthService {
     return safeUser;
   }
 
-  async signInWithGoogle(googleUser: any) {
+  //login
+  // async signInWithGoogle(googleUser: any) {
+  //   const existingUser = await this.usersService.findByEmail(googleUser.email);
+
+  //   if (existingUser) {
+  //     throw new ConflictException('User already exists');
+  //   }
+
+  //   const user = await this.usersService.findOrCreateGoogleUser(googleUser);
+  //   return this.generateTokens(user.id);
+  // }
+
+  async signUpWithGoogle(googleUser: any) {
+    const existingUser = await this.usersService.findByEmail(googleUser.email);
+
+    if (existingUser) {
+      throw new ConflictException('User already exists');
+    }
+
     const user = await this.usersService.findOrCreateGoogleUser(googleUser);
     return this.generateTokens(user.id);
   }

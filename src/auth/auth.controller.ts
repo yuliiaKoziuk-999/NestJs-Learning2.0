@@ -72,14 +72,14 @@ export class AuthController {
 
   @Public()
   @UseGuards(GoogleAuthGuard)
-  @Get('google/login')
+  @Get('google/register')
   googleLogin() {}
 
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
-    const response = await this.authService.signInWithGoogle(req.user);
+    const response = await this.authService.signUpWithGoogle(req.user);
     const accessToken = response.accessToken;
     const refreshToken = response.refreshToken;
 

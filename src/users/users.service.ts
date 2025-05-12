@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -11,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { use } from 'passport';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Injectable()
 export class UsersService {
@@ -23,7 +25,10 @@ export class UsersService {
       data: { hashedRefreshToken },
     });
   }
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly logger: MyLoggerService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const existingUser = await this.databaseService.employee.findFirst({
@@ -201,7 +206,11 @@ export class UsersService {
 
   async findOrCreateGoogleUser(googleUser: any) {
     const existingUser = await this.findByEmail(googleUser.email);
-    if (existingUser) return existingUser;
+
+    if (existingUser) {
+      throw new ConflictException('User already exists');
+    }
+    this.logger.log('googleUser in signUpWithGoogle:', googleUser);
 
     return this.create({
       ...googleUser,

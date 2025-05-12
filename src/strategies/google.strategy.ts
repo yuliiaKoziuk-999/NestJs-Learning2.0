@@ -49,22 +49,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       );
     }
 
-    try {
-      const user = await this.authService.validateGoogleUser({
-        email,
-        name: profile.displayName,
-        password: '',
-        role: 'INTERN',
-        username: '',
-      });
+    const user = {
+      email,
+      name: profile.displayName,
+      accessToken,
+      username: email.split('@')[0],
+      role: 'INTERN',
+      message: `We registered successfully`,
+    };
 
-      if (user) {
-        await this.authService.updatedAccessToken(user.id, accessToken);
-      }
-      return done(null, user);
-    } catch (error) {
-      console.error('Error validating Google user:', error);
-      return done(error, false);
-    }
+    return done(null, user);
   }
 }
