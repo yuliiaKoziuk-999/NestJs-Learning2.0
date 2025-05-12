@@ -119,7 +119,7 @@ export class AuthService {
 
   async refreshToken(userId: number) {
     const { accessToken, refreshToken } = await this.generateTokens(userId);
-    const hashedRefreshToken = await argon2.hash(refreshToken);
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     await this.usersService.updateHashedRefreshToken(
       userId,
       hashedRefreshToken,
@@ -140,17 +140,19 @@ export class AuthService {
       this.jwtService.signAsync(payload, this.refreshTokenConfig),
     ]);
 
+    const hashedAccessToken = await bcrypt.hash(accessToken, 10); // Якщо справді хочеш зберігати в базі
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
     await this.databaseService.employee.update({
       where: { id: userId },
       data: {
-        hashedRefreshToken,
+        accessToken: hashedAccessToken, // зберігаємо хеш
+        hashedRefreshToken, // зберігаємо хеш
       },
     });
 
     return {
-      accessToken,
+      accessToken, // повертаємо не хеш
       refreshToken,
     };
   }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -13,6 +13,7 @@ import facebookOauthConfig from './config/facebook-oath.config';
 import { ConfigModule } from '@nestjs/config';
 import jwtConfig from './config/jwt.config';
 import googleOauthConfig from './config/google-oauth.config';
+import { MyLoggerService } from './my-logger/my-logger.service';
 
 @Module({
   imports: [
@@ -45,6 +46,10 @@ import googleOauthConfig from './config/google-oauth.config';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: Logger,
+      useClass: MyLoggerService,
     },
   ],
 })

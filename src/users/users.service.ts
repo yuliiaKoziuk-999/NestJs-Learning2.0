@@ -10,11 +10,19 @@ import { ListDTO } from './dto/listUsers.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto'; // Додаємо для генерації безпечного пароля
 import { CreateUserDto } from './dto/create-user.dto';
+import { use } from 'passport';
 
 @Injectable()
 export class UsersService {
-  updateHashedRefreshToken(userId: number, hashedRefreshToken: string | null) {
-    throw new Error('Method not implemented.');
+  async updateHashedRefreshToken(
+    userId: number,
+    hashedRefreshToken: string | null,
+  ) {
+    // throw new Error('Method not implemented.');
+    await this.databaseService.employee.update({
+      where: { id: userId },
+      data: { hashedRefreshToken },
+    });
   }
   constructor(private readonly databaseService: DatabaseService) {}
 
