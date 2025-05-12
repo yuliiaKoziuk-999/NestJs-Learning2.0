@@ -17,6 +17,7 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthJwtPayload } from '../types/auth-jwtPayload';
 import { DatabaseService } from 'src/database/database.service';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { User } from 'src/users/entities/user.entity';
 
 interface CurrentUser {
   id: number;
@@ -25,6 +26,9 @@ interface CurrentUser {
 
 @Injectable()
 export class AuthService {
+  findUserByEmail(email: string): Promise<User | null> {
+    return this.usersService.findByEmail(email);
+  }
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -131,6 +135,16 @@ export class AuthService {
 
     const user = await this.usersService.findOrCreateGoogleUser(googleUser);
     return this.generateTokens(user.id);
+  }
+
+  async signInWithGoogle(googleUser: any) {
+    const existingUser = await this.usersService.findByEmail(googleUser.email);
+
+    if (existingUser) {
+      return this.generateTokens(existingUser.id);
+    }
+
+    throw new UnauthorizedException(`User is not registered`);
   }
 
   async signInWithFacebook(facebookUser: any) {
