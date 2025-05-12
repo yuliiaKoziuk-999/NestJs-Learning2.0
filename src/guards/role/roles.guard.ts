@@ -7,10 +7,14 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Role } from '../../enum/role.enum';
 import { ROLES_KEY } from '../../decorators/roles.decorator';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private readonly logger: MyLoggerService,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
@@ -21,8 +25,8 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    console.log({ user });
-    console.log('requiredRoles:', requiredRoles);
+    this.logger.log({ user });
+    this.logger.log('requiredRoles:' + JSON.stringify(requiredRoles));
 
     if (!requiredRoles || requiredRoles.length === 0) return true;
 

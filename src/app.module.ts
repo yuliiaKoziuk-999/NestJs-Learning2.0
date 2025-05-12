@@ -6,7 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { EmployeesModule } from './employees/employees.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-// import { MyLoggerModule } from './my-logger/my-logger.module';
+
 import { MyLoggerModule } from './my-logger/my-logger.module';
 import { AuthModule } from './auth/auth.module';
 import facebookOauthConfig from './config/facebook-oath.config';
@@ -21,9 +21,9 @@ import { MyLoggerService } from './my-logger/my-logger.service';
     DatabaseModule,
     EmployeesModule,
     ConfigModule.forRoot({
-      isGlobal: true, // щоб конфігурація була доступна у всіх модулях
-      envFilePath: '.env', // явно вказуємо файл .env
-      load: [jwtConfig, googleOauthConfig, facebookOauthConfig], // завантажуємо конфігурацію googleOauthConfig
+      isGlobal: true,
+      envFilePath: '.env',
+      load: [jwtConfig, googleOauthConfig, facebookOauthConfig],
     }),
     ThrottlerModule.forRoot([
       {

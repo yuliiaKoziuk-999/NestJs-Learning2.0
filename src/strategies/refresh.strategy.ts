@@ -4,13 +4,18 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConstants } from '../common/constans';
 import { UsersService } from 'src/users/users.service';
 import { ConfigType } from '@nestjs/config';
-import type refreshJwtConfigType from '../config/refresh-jwt.config'; // 👈 ключове слово `type`
+import type refreshJwtConfigType from '../config/refresh-jwt.config';
 import refreshJwtConfig from '../config/refresh-jwt.config';
-//TODO rename file
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
+
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'REFRESH-JWT') {
+export class RefreshtStrategy extends PassportStrategy(
+  Strategy,
+  'REFRESH-JWT',
+) {
   constructor(
     private usersService: UsersService,
+    private readonly logger: MyLoggerService,
     @Inject(refreshJwtConfig.KEY)
     private refreshJwtConfig: ConfigType<typeof refreshJwtConfigType>,
   ) {
@@ -22,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'REFRESH-JWT') {
   }
 
   async validate(payload: any) {
-    console.log('JWT PAYLOAD:', payload);
+    this.logger.log('JWT PAYLOAD:', payload);
     const user = await this.usersService.findOne({ id: payload.sub });
 
     if (!user) {
@@ -31,7 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'REFRESH-JWT') {
 
     const { password, ...safeUser } = user ?? {};
 
-    console.log('VALIDATED USER:', safeUser);
+    this.logger.log('VALIDATED USER:' + JSON.stringify(safeUser));
 
     return safeUser;
   }

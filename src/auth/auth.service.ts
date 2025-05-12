@@ -15,6 +15,7 @@ import { ConfigType } from '@nestjs/config';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthJwtPayload } from '../types/auth-jwtPayload';
 import { DatabaseService } from 'src/database/database.service';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 interface CurrentUser {
   id: number;
@@ -29,6 +30,7 @@ export class AuthService {
     @Inject(refreshJwtConfig.KEY)
     private refreshTokenConfig: ConfigType<typeof refreshJwtConfig>,
     private databaseService: DatabaseService,
+    private readonly logger: MyLoggerService,
   ) {}
 
   async validateUser(email: string, password: string) {
@@ -140,19 +142,19 @@ export class AuthService {
       this.jwtService.signAsync(payload, this.refreshTokenConfig),
     ]);
 
-    const hashedAccessToken = await bcrypt.hash(accessToken, 10); // Якщо справді хочеш зберігати в базі
+    const hashedAccessToken = await bcrypt.hash(accessToken, 10);
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
     await this.databaseService.employee.update({
       where: { id: userId },
       data: {
-        accessToken: hashedAccessToken, // зберігаємо хеш
-        hashedRefreshToken, // зберігаємо хеш
+        accessToken: hashedAccessToken,
+        hashedRefreshToken,
       },
     });
 
     return {
-      accessToken, // повертаємо не хеш
+      accessToken,
       refreshToken,
     };
   }

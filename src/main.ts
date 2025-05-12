@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AuthGuard } from './guards/auth.guards';
 import { JwtService } from '@nestjs/jwt';
+import { Logger } from '@nestjs/common';
+import { MyLoggerService } from './my-logger/my-logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,12 +19,13 @@ async function bootstrap() {
   SwaggerModule.setup('api', app as any, document);
   const reflector = app.get(Reflector);
   const jwtService = app.get(JwtService);
+  const logger = app.get(MyLoggerService);
 
-  app.use(cookieParser()); // ← обов’язково
-  app.useGlobalGuards(new AuthGuard(jwtService, reflector));
+  app.use(cookieParser());
+  app.useGlobalGuards(new AuthGuard(jwtService, reflector, logger));
   app.enableCors({
-    origin: 'http://localhost:3000', //TODO move to env
-    credentials: true, // ← дозволити надсилання cookie
+    origin: process.env.CLIENT_URL,
+    credentials: true,
   });
 
   await app.listen(3000);

@@ -20,7 +20,7 @@ import { UpdateAuthDto } from '../dto/update-auth.dto';
 import { SignInDTO } from '../dto/signIn.dto';
 import { AuthGuard } from '../guards/auth.guards';
 import { Request } from '@nestjs/common';
-import { Public } from '../decorators/public.decorator'; // Імпортуємо декоратор
+import { Public } from '../decorators/public.decorator';
 import { Roles } from '../decorators/roles.decorator';
 import { Role } from '../enum/role.enum';
 import { RolesGuard } from '../guards/role/roles.guard';
@@ -28,12 +28,15 @@ import { GoogleAuthGuard } from 'src/guards/google-auth/google-auth.guard';
 import { JwtAuthGuard } from '../guards/jwt-auth-guard.guard';
 import { RefreshAuthGuard } from '../guards/refresh-auth.guard';
 import { FacebookAuthGuard } from '../guards/facebook-auth/facebook-auth.guard';
-import { Console } from 'console';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Controller('auth')
 @Injectable()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly logger: MyLoggerService,
+  ) {}
   @Public()
   @HttpCode(HttpStatus.CREATED)
   @Post('registration')
@@ -45,7 +48,7 @@ export class AuthController {
   @Post('login')
   @SetMetadata('isPublic', true)
   signIn(@Body() signInDTO: SignInDTO) {
-    console.log(` SignInDTO ${signInDTO}`);
+    this.logger.log(` SignInDTO ${signInDTO}`);
     return this.authService.signIn(signInDTO.email, signInDTO.password);
   }
 

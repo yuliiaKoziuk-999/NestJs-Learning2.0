@@ -3,10 +3,14 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConstants } from '../common/constans';
 import { UsersService } from 'src/users/users.service';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private usersService: UsersService) {
+  constructor(
+    private usersService: UsersService,
+    private readonly logger: MyLoggerService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -15,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    console.log('JWT PAYLOAD:', payload);
+    this.logger.log('JWT PAYLOAD:', payload);
     const user = await this.usersService.findOne({ id: payload.sub });
 
     if (!user) {
@@ -24,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const { password, ...safeUser } = user ?? {};
 
-    console.log('VALIDATED USER:', safeUser);
+    this.logger.log('VALIDATED USER:' + JSON.stringify(safeUser));
 
     return safeUser;
   }

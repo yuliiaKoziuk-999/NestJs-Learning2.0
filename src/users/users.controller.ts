@@ -22,7 +22,7 @@ import { Role } from '../enum/role.enum';
 import { RolesGuard } from 'src/guards/role/roles.guard';
 import { AuthGuard } from 'src/guards/auth.guards';
 
-@Controller('users') //users
+@Controller('users')
 @UseGuards(AuthGuard)
 @Injectable()
 export class UsersController {

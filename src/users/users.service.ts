@@ -8,7 +8,7 @@ import { Prisma, Role } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { ListDTO } from './dto/listUsers.dto';
 import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto'; // Додаємо для генерації безпечного пароля
+import * as crypto from 'crypto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { use } from 'passport';
 
@@ -18,7 +18,6 @@ export class UsersService {
     userId: number,
     hashedRefreshToken: string | null,
   ) {
-    // throw new Error('Method not implemented.');
     await this.databaseService.employee.update({
       where: { id: userId },
       data: { hashedRefreshToken },
@@ -27,7 +26,6 @@ export class UsersService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createUserDto: CreateUserDto) {
-    // Перевірка на існуючого користувача за username або email
     const existingUser = await this.databaseService.employee.findFirst({
       where: {
         OR: [
@@ -44,7 +42,6 @@ export class UsersService {
       throw new Error('User with this username or email already exists');
     }
 
-    // Якщо користувач автентифікується через Google і пароль не передається
     let hashedPassword = '';
 
     if (createUserDto.password) {
@@ -60,7 +57,7 @@ export class UsersService {
     }
     const role = createUserDto.role || 'INTERN';
 
-    const name = createUserDto.name || 'Default Name'; // Тут ти можеш обрати підхід для заповнення name
+    const name = createUserDto.name || 'Default Name';
 
     try {
       return this.databaseService.employee.create({
@@ -81,7 +78,6 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    //++
     if (!email) {
       throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
     }
@@ -99,7 +95,6 @@ export class UsersService {
     return user;
   }
 
-  // Додаємо цей метод для отримання користувача за ID
   async findById(id: number) {
     return this.databaseService.employee.findUnique({
       where: { id },
@@ -119,7 +114,6 @@ export class UsersService {
       if (Object.values(Role).includes(role as Role)) {
         where.role = role as Role;
       } else {
-        // Якщо роль не належить до enum, можна вибрати за замовчуванням або викинути помилку
         throw new Error('Invalid role provided');
       }
     }
@@ -157,7 +151,6 @@ export class UsersService {
     };
   }
 
-  // Оновлений метод findOne
   async findOne({
     id,
     username,
@@ -168,16 +161,12 @@ export class UsersService {
     email?: string;
   }) {
     const identifiers = [id, username, email].filter(Boolean);
-    // if (!id && !username && !email) {
-    //   throw new UnauthorizedException('No identifier provided');
-    // }
     if (identifiers.length !== 1) {
       throw new UnauthorizedException(
         'Exactly one identifier must be provided',
       );
     }
 
-    // Очищення вхідних даних
     const cleanEmail = email?.trim();
     const cleanUsername = username?.trim();
 
@@ -210,7 +199,6 @@ export class UsersService {
     return user;
   }
 
-  // Метод для створення користувача через Google
   async findOrCreateGoogleUser(googleUser: any) {
     const existingUser = await this.findByEmail(googleUser.email);
     if (existingUser) return existingUser;

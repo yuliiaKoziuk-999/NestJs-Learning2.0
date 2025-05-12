@@ -6,7 +6,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-// pagination.dto.ts
 import { IsInt, IsOptional } from 'class-validator';
 import { OptionsDTO } from './options.dto';
 import { Type } from 'class-transformer';

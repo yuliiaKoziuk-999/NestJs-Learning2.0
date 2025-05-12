@@ -9,12 +9,14 @@ import { jwtConstants } from '../common/constans';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from 'src/decorators/public.decorator';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
+    private readonly logger: MyLoggerService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -22,14 +24,14 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    console.log(`ISPUBLIC ${isPublic}`);
+    this.logger.log(`ISPUBLIC ${isPublic}`);
     if (isPublic) {
       return true;
     }
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
-    console.log(`TOKEN ${token}`);
-    console.log(`REQUEST ${request}`);
+    this.logger.log(`TOKEN ${token}`);
+    this.logger.log(`REQUEST ${request}`);
 
     if (!token) {
       throw new UnauthorizedException('Token not found');
@@ -38,9 +40,9 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: jwtConstants.secret,
       });
-      console.log('Verified payload:', payload);
+      this.logger.log('Verified payload:', payload);
     } catch (error) {
-      console.log(`Error ${error}`);
+      this.logger.log(`Error ${error}`);
       throw new UnauthorizedException('Invalid token');
     }
     return true;
@@ -49,7 +51,7 @@ export class AuthGuard implements CanActivate {
   private extractTokenFromHeader(request: Request): string | undefined {
     const authHeader = request.headers['authorization'];
     if (!authHeader || !authHeader.startsWith('Bearer')) {
-      return undefined; // Якщо заголовок відсутній
+      return undefined;
     }
     return authHeader.split(' ')[1];
   }

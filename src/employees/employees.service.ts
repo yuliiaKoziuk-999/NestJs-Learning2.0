@@ -2,7 +2,7 @@ import { Injectable, Query } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { PaginationDTO } from './dto/pagination.dto';
-import { Role } from '@prisma/client'; // Потрібно імпортувати Role
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class EmployeesService {
