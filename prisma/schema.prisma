@@ -19,8 +19,26 @@ model Employee{
     accessToken String? 
     hashedRefreshToken String?
     authProvider String?
+
+    Post Post[]
 }
 
+
+model Post{
+    id Int @id @default(autoincrement())
+    title String
+    content String
+    userId Int
+    user Employee @relation(fields: [userId], references: [id])
+    createdAt DateTime @default(now())
+    category  Category? @relation(fields: [categoryId], references: [id])
+    categoryId Int? 
+}
+model Category {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  posts Post[]
+}
 enum Role {
     INTERN
     ENGINEER

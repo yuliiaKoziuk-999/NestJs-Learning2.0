@@ -14,6 +14,9 @@ import { ConfigModule } from '@nestjs/config';
 import jwtConfig from './config/jwt.config';
 import googleOauthConfig from './config/google-oauth.config';
 import { MyLoggerService } from './my-logger/my-logger.service';
+import { PostsModule } from './posts/posts.module';
+import { PrismaService } from './prisma/prisma.service';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -39,6 +42,8 @@ import { MyLoggerService } from './my-logger/my-logger.service';
     ]),
     MyLoggerModule,
     AuthModule,
+    PostsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [
