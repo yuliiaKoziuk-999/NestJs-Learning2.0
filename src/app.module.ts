@@ -17,6 +17,7 @@ import { MyLoggerService } from './my-logger/my-logger.service';
 import { PostsModule } from './posts/posts.module';
 import { PrismaService } from './prisma/prisma.service';
 import { CategoriesModule } from './categories/categories.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { CategoriesModule } from './categories/categories.module';
     AuthModule,
     PostsModule,
     CategoriesModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [

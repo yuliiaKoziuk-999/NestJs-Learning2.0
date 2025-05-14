@@ -8,18 +8,7 @@ export class PostsService {
   constructor(private prisma: PrismaService) {}
 
   create(inputData: CreatePostDto) {
-    return this.prisma.post.create({
-      data: {
-        title: inputData.title,
-        content: inputData.content,
-        userId: inputData.userId,
-        categoryId: inputData.categoryId, // <-- Оце правильно
-      },
-      include: {
-        user: true,
-        category: true,
-      },
-    });
+    const { title, content, userId, categoryId, tagIds } = inputData;
   }
 
   findAll() {

@@ -33,11 +33,18 @@ model Post{
     createdAt DateTime @default(now())
     category  Category? @relation(fields: [categoryId], references: [id])
     categoryId Int? 
+    tags      Tag[]   @relation("PostTags")
 }
 model Category {
   id    Int     @id @default(autoincrement())
   name  String  @unique
   posts Post[]
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String
+  posts Post[] @relation("PostTags")
 }
 enum Role {
     INTERN
