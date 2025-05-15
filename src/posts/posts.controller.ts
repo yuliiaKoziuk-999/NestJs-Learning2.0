@@ -21,7 +21,7 @@ export class PostsController {
 
   @Post()
   async create(@Body() createPostDto: CreatePostDto, @Req() req: Request) {
-    const userId = (req.user as any).sub;
+    const userId =req[`user`]?.[`sub`];//TODO CHECK
     return this.postsService.create(createPostDto, userId);
   }
 

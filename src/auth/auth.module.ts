@@ -9,7 +9,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GoogleStrategy } from '../strategies/google.strategy';
 import jwtConfig from '../config/jwt.config';
 import refreshJwtConfig from '../config/refresh-jwt.config';
-import { RefreshAuthGuard } from '../guards/refresh-auth.guard';
 import facebookOauthConfig from '../config/facebook-oath.config';
 import googleOauthConfig from '../config/google-oauth.config';
 import { FacebookStrategy } from '../strategies/facebook.strategy';

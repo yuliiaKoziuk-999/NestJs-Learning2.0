@@ -4,7 +4,6 @@ import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AuthGuard } from './guards/auth.guards';
 import { JwtService } from '@nestjs/jwt';
-import { Logger } from '@nestjs/common';
 import { MyLoggerService } from './my-logger/my-logger.service';
 
 async function bootstrap() {
