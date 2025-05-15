@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -6,3 +7,13 @@ export class AppService {
     return 'Hello World!';
   }
 }
+=======
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AppService {
+  getHello(): string {
+    return 'Hello World!';
+  }
+}
+>>>>>>> roles
