@@ -42,4 +42,3 @@ export class MyLoggerService extends ConsoleLogger {
     super.error(message, stackOrContext);
   }
 }
-

@@ -1,20 +1,3 @@
-<<<<<<< HEAD
-import { NestFactory, HttpAdapterHost } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { AllExeptionsFilter } from './all-exceptions.filter';
-
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  const { httpAdapter } = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new AllExeptionsFilter(httpAdapter));
-
-  app.enableCors();
-  app.setGlobalPrefix('api');
-  await app.listen(process.env.PORT ?? 3000);
-}
-bootstrap();
-=======
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
@@ -48,4 +31,3 @@ async function bootstrap() {
   await app.listen(3000);
 }
 bootstrap();
->>>>>>> roles
