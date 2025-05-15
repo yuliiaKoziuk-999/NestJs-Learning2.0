@@ -11,7 +11,6 @@ import { ListDTO } from './dto/listUsers.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { use } from 'passport';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Injectable()

@@ -91,7 +91,7 @@ export class AuthController {
 
       res.redirect(
         `http://localhost:5173/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
-      );//TODO: move to env (REDIRECT_URL=http://localhost:5173)
+      ); //TODO: move to env (REDIRECT_URL=http://localhost:5173)
     } catch (error) {
       res.redirect(
         `http://localhost:5173/auth/error?message=${encodeURIComponent(
@@ -114,6 +114,6 @@ export class AuthController {
     const { accessToken, refreshToken } = response;
     res.redirect(
       `http://localhost:5173/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
-    );//TODO: move to env
+    ); //TODO: move to env
   }
 }

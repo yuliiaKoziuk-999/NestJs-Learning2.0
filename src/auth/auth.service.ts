@@ -28,7 +28,7 @@ interface CurrentUser {
 export class AuthService {
   findUserByEmail(email: string): Promise<User | null> {
     return this.usersService.findByEmail(email);
-  }//TODO: should be under constructor
+  } //TODO: should be under constructor
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
