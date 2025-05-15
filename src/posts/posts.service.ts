@@ -5,13 +5,25 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ListDTO } from 'src/users/dto/listUsers.dto';
 import { ListPostsDto } from './dto/list-post.dto';
 import { Prisma } from '@prisma/client';
+import { connect } from 'http2';
 
 @Injectable()
 export class PostsService {
   constructor(private prisma: PrismaService) {}
 
-  create(inputData: CreatePostDto) {
-    const { title, content, userId, categoryId, tagIds } = inputData;
+  async create(inputData: CreatePostDto, userId: number) {
+    const { title, content, categoryId, tagId } = inputData;
+
+    return this.prisma.post.create({
+      data: {
+        title,
+        content,
+        userId,
+        categoryId,
+        tagId,
+      },
+      include: { tag: true, category: true },
+    });
   }
 
   async findAllPosts({ page, limit, search, filters }: ListPostsDto) {
@@ -75,7 +87,7 @@ export class PostsService {
     });
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     return this.prisma.post.findUnique({
       where: { id },
       include: { user: true },
@@ -83,9 +95,17 @@ export class PostsService {
   }
 
   async update(id: number, updatedData: UpdatePostDto) {
+    const { title, content, categoryId, tagId } = updatedData;
+
     return this.prisma.post.update({
       where: { id },
-      data: updatedData,
+      data: {
+        title,
+        content,
+        categoryId,
+        tagId,
+      },
+      include: { tag: true, category: true },
     });
   }
 

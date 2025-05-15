@@ -33,7 +33,9 @@ model Post{
     createdAt DateTime @default(now())
     category  Category? @relation(fields: [categoryId], references: [id])
     categoryId Int? 
-    tags      Tag[]   @relation("PostTags")
+
+    tag     Tag? @relation(fields: [tagId], references: [id])
+  tagId   Int?
 }
 model Category {
   id    Int     @id @default(autoincrement())
@@ -44,7 +46,7 @@ model Category {
 model Tag {
   id    Int    @id @default(autoincrement())
   name  String
-  posts Post[] @relation("PostTags")
+ posts Post[] 
 }
 enum Role {
     INTERN
