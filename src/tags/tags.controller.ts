@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { TagsService } from './tags.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { ListTagsDto } from './dto/list-tags.dto';
 
 @Controller('tags')
 export class TagsController {
@@ -21,8 +23,8 @@ export class TagsController {
   }
 
   @Get()
-  findAll() {
-    return this.tagsService.findAll();
+  async findAllTags(@Query() query: ListTagsDto) {
+    return this.tagsService.findAllTags(query);
   }
 
   @Get(':id')

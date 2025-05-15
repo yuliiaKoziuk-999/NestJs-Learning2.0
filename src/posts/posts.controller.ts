@@ -22,11 +22,6 @@ export class PostsController {
     return this.postsService.create(createPostDto);
   }
 
-  // @Get()
-  // async findAll() {
-  //   return this.postsService.findAllPosts(Query);
-  // }
-
   @Get()
   async findAllPosts(@Query() query: ListPostsDto) {
     return this.postsService.findAllPosts(query);
