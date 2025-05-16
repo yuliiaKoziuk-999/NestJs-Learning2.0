@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TagsService } from './tags.service';
+import { TagsModule } from './tags.module';
 
 describe('TagsService', () => {
   let service: TagsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [TagsModule],
       providers: [TagsService],
     }).compile();
 
