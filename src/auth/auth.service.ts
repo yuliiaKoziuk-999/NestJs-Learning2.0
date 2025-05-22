@@ -47,7 +47,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return { id: user.id };
+    // Не повертаємо пароль
+    return {
+      id: user.id,
+      email: user.email,
+      // name: user.name,
+    };
   }
 
   async register(createAuthDto: CreateAuthDto) {
