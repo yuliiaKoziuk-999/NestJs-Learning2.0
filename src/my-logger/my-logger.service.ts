@@ -18,7 +18,7 @@ export class MyLoggerService extends ConsoleLogger {
       if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs'))) {
         await fsPromises.mkdir(path.join(__dirname, '..', '..', 'logs'));
       }
-      // Запис у файл
+
       await fsPromises.appendFile(
         path.join(__dirname, '..', '..', 'logs', 'myLogFile.log'),
         formattedEntry,

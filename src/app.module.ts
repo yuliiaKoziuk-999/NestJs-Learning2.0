@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -6,14 +6,31 @@ import { DatabaseModule } from './database/database.module';
 import { EmployeesModule } from './employees/employees.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-// import { MyLoggerModule } from './my-logger/my-logger.module';
+
 import { MyLoggerModule } from './my-logger/my-logger.module';
+import { AuthModule } from './auth/auth.module';
+import facebookOauthConfig from './config/facebook-oath.config';
+import { ConfigModule } from '@nestjs/config';
+import jwtConfig from './config/jwt.config';
+import googleOauthConfig from './config/google-oauth.config';
+import { MyLoggerService } from './my-logger/my-logger.service';
+import { PostsModule } from './posts/posts.module';
+import { PrismaService } from './prisma/prisma.service';
+import { CategoriesModule } from './categories/categories.module';
+import { TagsModule } from './tags/tags.module';
+import { NodemailerModule } from './mailing services/nodemailer.module';
 
 @Module({
   imports: [
     UsersModule,
     DatabaseModule,
+    NodemailerModule,
     EmployeesModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+      load: [jwtConfig, googleOauthConfig, facebookOauthConfig],
+    }),
     ThrottlerModule.forRoot([
       {
         name: 'short',
@@ -27,7 +44,10 @@ import { MyLoggerModule } from './my-logger/my-logger.module';
       },
     ]),
     MyLoggerModule,
-    // MyLoggerModule,
+    AuthModule,
+    PostsModule,
+    CategoriesModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -35,6 +55,10 @@ import { MyLoggerModule } from './my-logger/my-logger.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: Logger,
+      useClass: MyLoggerService,
     },
   ],
 })

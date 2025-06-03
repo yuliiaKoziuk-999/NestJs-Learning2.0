@@ -13,6 +13,7 @@ import { EmployeesService } from './employees.service';
 import { Prisma, Role } from '@prisma/client';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { PaginationDTO } from './dto/pagination.dto';
 
 @SkipThrottle()
 @Controller('/employees')
@@ -21,18 +22,22 @@ export class EmployeesController {
   private readonly logger = new MyLoggerService(EmployeesController.name);
 
   @Post()
-  create(@Body() createEmployeeDto: Prisma.EmployeeCreateInput) {
+  create(@Body() createEmployeeDto: Prisma.EmployeeCreateInput[]) {
     return this.employeesService.create(createEmployeeDto);
   }
 
   @SkipThrottle({ default: false })
   @Get()
-  findAll(@Ip() ip: string, @Query('role') role?: Role) {
+  findAll(
+    @Query() paginationDTO: PaginationDTO,
+    @Ip() ip: string,
+    @Query('role') role?: Role,
+  ) {
     this.logger.log(
       `Request for ALL Employees\t${ip} `,
       EmployeesController.name,
     );
-    return this.employeesService.findAll(role);
+    return this.employeesService.findAll(role, paginationDTO);
   }
 
   @Throttle({ short: { ttl: 1000, limit: 1 } })

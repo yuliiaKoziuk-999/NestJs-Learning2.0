@@ -3,24 +3,54 @@ generator client {
 }
 
 datasource db {
-    provider = "postgresql"
-    url=env("DATABASE_URL")
-    directUrl=env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Employee{
-    id Int @id @default(autoincrement())
-    name String
-    email String @unique
-    role Role
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Employee {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  email              String   @unique
+  role               Role
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  username           String   @unique
+  password           String
+  accessToken        String?
+  hashedRefreshToken String?
+  authProvider       String?
+
+  Post Post[]
+}
+
+model Post {
+  id         Int       @id @default(autoincrement())
+  title      String
+  content    String
+  userId     Int
+  user       Employee  @relation(fields: [userId], references: [id])
+  createdAt  DateTime  @default(now())
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
+
+  tag   Tag? @relation(fields: [tagId], references: [id])
+  tagId Int?
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  posts Post[]
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String
+  posts Post[]
 }
 
 enum Role {
-    INTERN
-    ENGINEER
-    ADMIN
+  INTERN
+  ENGINEER
+  ADMIN
 }
-
-
