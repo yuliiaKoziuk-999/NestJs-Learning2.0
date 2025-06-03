@@ -26,9 +26,6 @@ interface CurrentUser {
 
 @Injectable()
 export class AuthService {
-  findUserByEmail(email: string): Promise<User | null> {
-    return this.usersService.findByEmail(email);
-  } //TODO: should be under constructor
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -38,6 +35,10 @@ export class AuthService {
     private readonly logger: MyLoggerService,
   ) {}
 
+  async findUserByEmail(email: string): Promise<User | null> {
+    return this.usersService.findByEmail(email);
+  }
+
   async validateUser(email: string, password: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new UnauthorizedException('User not Found');
@@ -46,12 +47,9 @@ export class AuthService {
     if (!isPasswordMatch) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    // Не повертаємо пароль
     return {
       id: user.id,
       email: user.email,
-      // name: user.name,
     };
   }
 
@@ -119,18 +117,6 @@ export class AuthService {
     const { password, ...safeUser } = user;
     return safeUser;
   }
-
-  //login
-  // async signInWithGoogle(googleUser: any) {
-  //   const existingUser = await this.usersService.findByEmail(googleUser.email);
-
-  //   if (existingUser) {
-  //     throw new ConflictException('User already exists');
-  //   }
-
-  //   const user = await this.usersService.findOrCreateGoogleUser(googleUser);
-  //   return this.generateTokens(user.id);
-  // }
 
   async signUpWithGoogle(googleUser: any) {
     const existingUser = await this.usersService.findByEmail(googleUser.email);

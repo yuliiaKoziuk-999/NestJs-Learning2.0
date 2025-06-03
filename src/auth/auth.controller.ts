@@ -90,8 +90,8 @@ export class AuthController {
       const { accessToken, refreshToken } = tokens;
 
       res.redirect(
-        `http://localhost:5173/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
-      ); //TODO: move to env (REDIRECT_URL=http://localhost:5173)
+        `${process.env.REDIRECT_URL}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
+      );
     } catch (error) {
       res.redirect(
         `http://localhost:5173/auth/error?message=${encodeURIComponent(

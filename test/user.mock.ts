@@ -5,7 +5,6 @@ export const mockUser1: User = {
   email: 'user1@example.com',
   password: 'hashedPassword1',
   name: 'Test User 1',
-  // додай інші обов’язкові поля, якщо є
 };
 
 export const mockUser2: User = {
@@ -13,7 +12,6 @@ export const mockUser2: User = {
   email: 'user2@example.com',
   password: 'hashedPassword2',
   name: 'Test User 2',
-  // додай інші обов’язкові поля, якщо є
 };
 
 export const mockUser3: User = {
@@ -21,7 +19,6 @@ export const mockUser3: User = {
   email: 'user3@example.com',
   password: 'hashedPassword3',
   name: 'Test User 3',
-  // додай інші обов’язкові поля, якщо є
 };
 
 export const mockUser4: User = {
@@ -29,7 +26,6 @@ export const mockUser4: User = {
   email: 'user4@example.com',
   password: 'hashedPassword4',
   name: 'Test User 4',
-  // додай інші обов’язкові поля, якщо є
 };
 
 export const mockUser5: User = {
@@ -37,7 +33,6 @@ export const mockUser5: User = {
   email: 'user5@example.com',
   password: 'hashedPassword5',
   name: 'Test User 5',
-  // додай інші обов’язкові поля, якщо є
 };
 
 export const mockUsers: User[] = [

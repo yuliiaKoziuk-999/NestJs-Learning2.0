@@ -1,4 +1,3 @@
-// src/posts/posts.module.ts
 import { Global, Module } from '@nestjs/common';
 import { PostsService } from '../posts/posts.service';
 import { PostsController } from '../posts/posts.controller';

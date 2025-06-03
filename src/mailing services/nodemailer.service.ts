@@ -1,8 +1,12 @@
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Queue } from 'bullmq';
 import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
 
 @Injectable()
 export class NodemailerService implements OnModuleInit {
+  constructor(@InjectQueue('emailQueue') private readonly emailQueue: Queue) {}
+
   private transport: Transporter;
 
   async onModuleInit(): Promise<void> {
@@ -31,5 +35,17 @@ export class NodemailerService implements OnModuleInit {
       console.error('Email error:', error);
       throw error;
     }
+  }
+
+  async sendOtp(to: string) {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await this.emailQueue.add('sendEmail', {
+      to,
+      subject: 'Your OTP Code',
+      text: `Your OTP is: ${otp}`,
+    });
+
+    return { otp };
   }
 }
