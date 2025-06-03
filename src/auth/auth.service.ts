@@ -6,18 +6,18 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAuthDto } from '../dto/create-auth.dto';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as argon2 from 'argon2';
 import * as crypto from 'crypto';
-import refreshJwtConfig from '../config/refresh-jwt.config';
+import refreshJwtConfig from '@/config/refresh-jwt.config';
 import { ConfigType } from '@nestjs/config';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthJwtPayload } from '../types/auth-jwtPayload';
-import { DatabaseService } from 'src/database/database.service';
-import { MyLoggerService } from 'src/my-logger/my-logger.service';
-import { User } from 'src/users/entities/user.entity';
+import { DatabaseService } from '../database/database.service';
+import { MyLoggerService } from '../my-logger/my-logger.service';
+import { User } from '../users/entities/user.entity';
 
 interface CurrentUser {
   id: number;
@@ -67,6 +67,7 @@ export class AuthService {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+
       const createUserDto: CreateUserDto = {
         name: username,
         email,

@@ -18,11 +18,13 @@ import { PostsModule } from './posts/posts.module';
 import { PrismaService } from './prisma/prisma.service';
 import { CategoriesModule } from './categories/categories.module';
 import { TagsModule } from './tags/tags.module';
+import { NodemailerModule } from './mailing services/nodemailer.module';
 
 @Module({
   imports: [
     UsersModule,
     DatabaseModule,
+    NodemailerModule,
     EmployeesModule,
     ConfigModule.forRoot({
       isGlobal: true,

@@ -2,11 +2,11 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConstants } from '../common/constans';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { ConfigType } from '@nestjs/config';
 import type refreshJwtConfigType from '../config/refresh-jwt.config';
-import refreshJwtConfig from '../config/refresh-jwt.config';
-import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import refreshJwtConfig from '@/config/refresh-jwt.config';
+import { MyLoggerService } from '../my-logger/my-logger.service';
 
 @Injectable()
 export class RefreshtStrategy extends PassportStrategy(
