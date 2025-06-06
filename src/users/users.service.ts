@@ -209,7 +209,7 @@ export class UsersService {
     if (existingUser) {
       throw new ConflictException('User already exists');
     }
-
+    this.logger.log('googleUser in signUpWithGoogle:', googleUser);
     return this.create({
       ...googleUser,
       username: googleUser.username ?? googleUser.email.split('@')[0],

@@ -5,6 +5,7 @@ import { NodemailerService } from './nodemailer.service';
 import { BullModule } from '@nestjs/bullmq';
 import { NodemailerProcessor } from '../mail.processor';
 import { QueueService } from '../queue/queue.service';
+import { EMAIL_QUEUE } from '@/constants/queue.constants';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { QueueService } from '../queue/queue.service';
     }),
 
     BullModule.registerQueue({
-      name: 'emailQueue',
+      name: EMAIL_QUEUE,
     }),
   ],
   controllers: [NodemailerController],
