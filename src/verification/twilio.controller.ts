@@ -10,13 +10,11 @@ export class TwilioController {
 
   @Post('send')
   async sendSms(@Body() data: { phoneNumber: string; message: string }) {
-    this.logger.log(`Sending SMS to ${data.phoneNumber}`);
     return this.twilioService.sendSms(data);
   }
 
   @Post('status')
   async updateStatus(@Body() data: { SmsSid: string; SmsStatus: string }) {
-    this.logger.log(`Updating status for SID ${data.SmsSid}`);
     return this.twilioService.updateStatusSms(data);
   }
 
@@ -31,7 +29,6 @@ export class TwilioController {
       SmsStatus: string;
     },
   ) {
-    this.logger.log(`Received SMS from ${data.From}`);
     return this.twilioService.receiveSms(data);
   }
 

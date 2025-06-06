@@ -41,7 +41,6 @@ export class AuthController {
   @Post('login')
   @SetMetadata('isPublic', true)
   signIn(@Body() signInDTO: SignInDTO) {
-    this.logger.log(`SignInDTO: ${JSON.stringify(signInDTO)}`);
     return this.authService.signIn(signInDTO.email, signInDTO.password);
   }
 

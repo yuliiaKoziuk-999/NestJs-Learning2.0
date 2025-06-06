@@ -40,7 +40,6 @@ export class TwilioService implements OnModuleInit {
   }
 
   async sendSms(data: SendSmsInput): Promise<SmsEntity> {
-    this.logger.log('Sending SMS...');
     const from = process.env.TWILIO_FROM_NUMBER ?? '';
 
     try {

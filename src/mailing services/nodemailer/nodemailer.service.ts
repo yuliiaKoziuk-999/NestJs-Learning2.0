@@ -32,7 +32,6 @@ export class NodemailerService implements OnModuleInit {
 
     try {
       const result = await this.transport.sendMail(mailOptions);
-      console.log('Email sent:', result.response);
       return result;
     } catch (error) {
       console.error('Email error:', error);
