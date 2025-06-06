@@ -14,13 +14,12 @@ model Employee {
   role               Role
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
-  username           String   @unique
   password           String
+  username           String   @unique
   accessToken        String?
   hashedRefreshToken String?
   authProvider       String?
-
-  Post Post[]
+  Post               Post[]
 }
 
 model Post {
@@ -28,13 +27,12 @@ model Post {
   title      String
   content    String
   userId     Int
-  user       Employee  @relation(fields: [userId], references: [id])
   createdAt  DateTime  @default(now())
-  category   Category? @relation(fields: [categoryId], references: [id])
   categoryId Int?
-
-  tag   Tag? @relation(fields: [tagId], references: [id])
-  tagId Int?
+  tagId      Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  tag        Tag?      @relation(fields: [tagId], references: [id])
+  user       Employee  @relation(fields: [userId], references: [id])
 }
 
 model Category {
@@ -49,8 +47,34 @@ model Tag {
   posts Post[]
 }
 
+model Sms {
+  id        String   @id @default(uuid())
+  from      String
+  to        String
+  message   String
+  status    String
+  sid       String
+  createdAt DateTime @default(now())
+}
+
 enum Role {
   INTERN
   ENGINEER
   ADMIN
+}
+
+enum sms_status_enum {
+  accepted
+  scheduled
+  queued
+  sending
+  sent
+  receiving
+  received
+  delivered
+  undelivered
+  failed
+  read
+  canceled
+  partially_delivered
 }

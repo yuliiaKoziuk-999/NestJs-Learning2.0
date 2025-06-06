@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { NodemailerService } from './nodemailer.service';
+
 import { MailService } from '@sendgrid/mail';
-import { QueueService } from './queue/queue.service';
+import { NodemailerService } from './nodemailer.service';
+import { QueueService } from '../queue/queue.service';
 
 @Controller('email')
 export class NodemailerController {
   constructor(
-    private readonly mailer: NodemailerService,
     private readonly mailService: NodemailerService,
     private readonly queueService: QueueService,
   ) {}
@@ -17,7 +17,7 @@ export class NodemailerController {
     @Query('subject') subject: string,
     @Query('text') text: string,
   ) {
-    return this.mailer.sendMessage(to, subject, text);
+    return this.mailService.sendMessage(to, subject, text);
   }
 
   @Get('otp')
@@ -29,8 +29,8 @@ export class NodemailerController {
     return this.mailService.sendOtp(to);
   }
   @Post('otp')
-  async sendOtp1(@Body('email') email: string) {
-    return this.mailService.sendOtp(email);
+  async sendOtpCreated(@Body('email') email: string) {
+    return this.mailService.sendOtpCreated(email);
   }
 
   @Post('bulk')

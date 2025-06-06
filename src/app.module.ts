@@ -18,7 +18,8 @@ import { PostsModule } from './posts/posts.module';
 import { PrismaService } from './prisma/prisma.service';
 import { CategoriesModule } from './categories/categories.module';
 import { TagsModule } from './tags/tags.module';
-import { NodemailerModule } from './mailing services/nodemailer.module';
+import { NodemailerModule } from './mailing services/nodemailer/nodemailer.module';
+import { TwilioModule } from './verification/twilio.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { NodemailerModule } from './mailing services/nodemailer.module';
     PostsModule,
     CategoriesModule,
     TagsModule,
+    TwilioModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { NodemailerController } from './nodemailer.controller';
 import { NodemailerService } from './nodemailer.service';
-import { NodemailerProcessor } from './mail.processor';
+
 import { BullModule } from '@nestjs/bullmq';
-import { QueueService } from './queue/queue.service';
+import { NodemailerProcessor } from '../mail.processor';
+import { QueueService } from '../queue/queue.service';
 
 @Module({
   imports: [
