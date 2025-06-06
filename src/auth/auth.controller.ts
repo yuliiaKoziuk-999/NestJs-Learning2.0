@@ -41,7 +41,6 @@ export class AuthController {
   @Post('login')
   @SetMetadata('isPublic', true)
   signIn(@Body() signInDTO: SignInDTO) {
-    this.logger.log(`SignInDTO: ${JSON.stringify(signInDTO)}`);
     return this.authService.signIn(signInDTO.email, signInDTO.password);
   }
 
@@ -113,7 +112,7 @@ export class AuthController {
     const response = await this.authService.signInWithFacebook(req.user);
     const { accessToken, refreshToken } = response;
     res.redirect(
-      `http://localhost:5173/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
+      `${process.env.REDIRECT_URL}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
     ); //TODO: move to env
   }
 }

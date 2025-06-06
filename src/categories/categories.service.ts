@@ -23,17 +23,12 @@ export class CategoriesService {
 
   async findAllCategories(params: ListCategoriesDto = {}) {
     const page = params.page ? parseInt(params.page.toString(), 10) : 1;
-    console.log(params);
     const limit = params.limit ? parseInt(params.limit.toString(), 10) : 10;
-    console.log(params);
     const search = params.search || '';
-    console.log(params);
     const skip = (page - 1) * limit;
-    console.log(params);
 
     const where: Prisma.CategoryWhereInput = {};
 
-    console.log(params);
     if (search) {
       where.name = {
         contains: search,

@@ -5,6 +5,9 @@ import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
 
 @Injectable()
 export class NodemailerService implements OnModuleInit {
+  sendOtpCreated(email: string) {
+    throw new Error('Method not implemented.');
+  }
   constructor(@InjectQueue('emailQueue') private readonly emailQueue: Queue) {}
 
   private transport: Transporter;
@@ -29,7 +32,6 @@ export class NodemailerService implements OnModuleInit {
 
     try {
       const result = await this.transport.sendMail(mailOptions);
-      console.log('Email sent:', result.response);
       return result;
     } catch (error) {
       console.error('Email error:', error);
