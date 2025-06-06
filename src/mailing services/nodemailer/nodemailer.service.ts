@@ -1,3 +1,4 @@
+import { EMAIL_QUEUE } from '@/constants/queue.constants';
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
@@ -5,10 +6,7 @@ import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
 
 @Injectable()
 export class NodemailerService implements OnModuleInit {
-  sendOtpCreated(email: string) {
-    throw new Error('Method not implemented.');
-  }
-  constructor(@InjectQueue('emailQueue') private readonly emailQueue: Queue) {}
+  constructor(@InjectQueue(EMAIL_QUEUE) private readonly emailQueue: Queue) {}
 
   private transport: Transporter;
 
