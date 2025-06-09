@@ -27,6 +27,7 @@ export class RefreshtStrategy extends PassportStrategy(
   }
 
   async validate(payload: any) {
+    this.logger.log('JWT PAYLOAD:', payload);
     const user = await this.usersService.findOne({ id: payload.sub });
 
     if (!user) {
@@ -34,7 +35,7 @@ export class RefreshtStrategy extends PassportStrategy(
     }
 
     const { password, ...safeUser } = user ?? {};
-
+    this.logger.log('VALIDATED USER:' + JSON.stringify(safeUser));
     return safeUser;
   }
 }

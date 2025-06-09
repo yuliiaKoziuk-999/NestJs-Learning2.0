@@ -28,10 +28,6 @@ export class NodemailerController {
   ) {
     return this.mailService.sendOtp(to);
   }
-  @Post('otp')
-  async sendOtpCreated(@Body('email') email: string) {
-    return this.mailService.sendOtpCreated(email);
-  }
 
   @Post('bulk')
   async sendBulk(

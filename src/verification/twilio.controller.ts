@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Logger } from '@nestjs/common';
 import { TwilioService } from './twilio.service';
 import { SmsEntity } from './entities/sms.entity';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @Controller('twilio')
 export class TwilioController {
@@ -36,5 +37,14 @@ export class TwilioController {
   async sendOtp(@Body('phoneNumber') phoneNumber: string) {
     const result = await this.twilioService.sendOtp(phoneNumber);
     return { message: `OTP sent successfully`, otp: result.otp };
+  }
+
+  @Post('verify-otp')
+  async verifyOtp(@Body() body: VerifyOtpDto): Promise<{ success: boolean }> {
+    const isValid = await this.twilioService.verifyOtp(
+      body.phoneNumber,
+      body.otp,
+    );
+    return { success: isValid };
   }
 }
