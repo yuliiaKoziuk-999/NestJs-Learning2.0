@@ -20,6 +20,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { TagsModule } from './tags/tags.module';
 import { NodemailerModule } from './mailing services/nodemailer/nodemailer.module';
 import { TwilioModule } from './verification/twilio.module';
+import { RedisService } from './redis/redis.service';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { TwilioModule } from './verification/twilio.module';
   ],
   controllers: [AppController],
   providers: [
+    RedisService,
     AppService,
     {
       provide: APP_GUARD,
@@ -63,5 +65,6 @@ import { TwilioModule } from './verification/twilio.module';
       useClass: MyLoggerService,
     },
   ],
+  exports: [RedisService],
 })
 export class AppModule {}

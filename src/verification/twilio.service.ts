@@ -3,6 +3,7 @@ import { Twilio, Twilio as TwilioClient } from 'twilio';
 import { SmsRepository } from '../repository/sms.repository';
 import { SmsEntity } from './entities/sms.entity';
 import { randomInt } from 'crypto';
+import { RedisService } from '@/redis/redis.service';
 
 interface SendSmsInput {
   phoneNumber: string;
@@ -27,7 +28,10 @@ export class TwilioService implements OnModuleInit {
   private twilio: TwilioClient;
   private readonly logger = new Logger(TwilioService.name);
 
-  constructor(private readonly smsRepository: SmsRepository) {}
+  constructor(
+    private readonly smsRepository: SmsRepository,
+    private readonly redisService: RedisService,
+  ) {}
 
   async onModuleInit(): Promise<void> {
     try {
@@ -107,14 +111,19 @@ export class TwilioService implements OnModuleInit {
 
     try {
       //Send OTP via SMS using Twilio
+      const key = `otp:${phoneNumber}`;
+      const ttl = 5 * 60;
+      await this.redisService.set(key, otp, ttl);
+
       await this.twilio.messages.create({
         body: `Your OTP is ${otp}`,
         from: process.env.TWILIO_FROM_NUMBER,
         to: phoneNumber,
       });
+
       return otp;
     } catch (error) {
-      console.error(`Error sending OTP via SMS`, error);
+      this.logger.error(`Error sending OTP via SMS`, error);
       throw new Error('Failed to send OTP via SMS');
     }
   }
@@ -122,5 +131,21 @@ export class TwilioService implements OnModuleInit {
   async sendOtp(phoneNumber: string): Promise<{ otp: string }> {
     const otp = await this.sendOtpToMobile(phoneNumber);
     return { otp };
+  }
+
+  async verifyOtp(phoneNumber: string, enteredOtp: string): Promise<boolean> {
+    const key = `otp:${phoneNumber}`;
+    const storedOtp = await this.redisService.get(key);
+
+    if (!storedOtp) return false;
+
+    const isMatch = storedOtp === enteredOtp;
+
+    if (isMatch) {
+      // Видаляємо OTP після використання
+      await this.redisService.del(key);
+    }
+
+    return isMatch;
   }
 }
