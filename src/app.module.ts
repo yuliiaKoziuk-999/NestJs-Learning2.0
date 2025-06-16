@@ -5,7 +5,7 @@ import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { EmployeesModule } from './employees/employees.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, Reflector } from '@nestjs/core';
 
 import { MyLoggerModule } from './my-logger/my-logger.module';
 import { AuthModule } from './auth/auth.module';
@@ -21,9 +21,14 @@ import { TagsModule } from './tags/tags.module';
 import { NodemailerModule } from './mailing services/nodemailer/nodemailer.module';
 import { TwilioModule } from './verification/twilio.module';
 import { RedisService } from './redis/redis.service';
+import { RolesGuard } from './guards/role/roles.guard';
+import { GatewayModule } from './gateway/gateway.module';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
+    SocketModule,
+    GatewayModule,
     UsersModule,
     DatabaseModule,
     NodemailerModule,
@@ -63,6 +68,12 @@ import { RedisService } from './redis/redis.service';
     {
       provide: Logger,
       useClass: MyLoggerService,
+    },
+    Reflector,
+    RolesGuard,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
   exports: [RedisService],
