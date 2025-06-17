@@ -5,9 +5,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { MyLoggerService } from '@/my-logger/my-logger.service';
 import { MyLoggerModule } from '@/my-logger/my-logger.module';
+import { NotificationsModule } from '@/notifications/notifications.module';
 
 @Module({
-  imports: [PrismaModule, MyLoggerModule],
+  imports: [PrismaModule, MyLoggerModule, NotificationsModule],
   controllers: [PostsController],
   providers: [PostsService],
 })

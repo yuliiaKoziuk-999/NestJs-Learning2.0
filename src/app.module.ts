@@ -22,13 +22,15 @@ import { NodemailerModule } from './mailing services/nodemailer/nodemailer.modul
 import { TwilioModule } from './verification/twilio.module';
 import { RedisService } from './redis/redis.service';
 import { RolesGuard } from './guards/role/roles.guard';
-import { GatewayModule } from './gateway/gateway.module';
 import { SocketModule } from './socket/socket.module';
+import { SocketIoGateway } from './notifications/socket-io.gateway';
+import { NativeWebSocketGateway } from './notifications/websocket.gateway';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
+    NotificationsModule,
     SocketModule,
-    GatewayModule,
     UsersModule,
     DatabaseModule,
     NodemailerModule,
@@ -59,6 +61,8 @@ import { SocketModule } from './socket/socket.module';
   ],
   controllers: [AppController],
   providers: [
+    SocketIoGateway,
+    NativeWebSocketGateway,
     RedisService,
     AppService,
     {
@@ -76,6 +80,6 @@ import { SocketModule } from './socket/socket.module';
       useClass: RolesGuard,
     },
   ],
-  exports: [RedisService],
+  exports: [RedisService, SocketIoGateway, NativeWebSocketGateway],
 })
 export class AppModule {}
