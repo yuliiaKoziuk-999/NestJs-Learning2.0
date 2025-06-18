@@ -6,15 +6,21 @@ import { ListDTO } from 'src/users/dto/listUsers.dto';
 import { ListPostsDto } from './dto/list-post.dto';
 import { Prisma } from '@prisma/client';
 import { connect } from 'http2';
+import { SocketIoGateway } from '../notifications/socket-io.gateway';
+import { NativeWebSocketGateway } from '../notifications/websocket.gateway';
 
 @Injectable()
 export class PostsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly socketIoGateway: SocketIoGateway,
+    private readonly nativeWebSocketGateway: NativeWebSocketGateway,
+  ) {}
 
   async create(inputData: CreatePostDto, userId: number) {
     const { title, content, categoryId, tagId } = inputData;
 
-    return this.prisma.post.create({
+    const createdPost = await this.prisma.post.create({
       data: {
         title,
         content,
@@ -24,6 +30,16 @@ export class PostsService {
       },
       include: { tag: true, category: true },
     });
+
+    const message = `✅ Post "${createdPost.title}" created successfully`;
+
+    // Надсилання через Socket.IO
+    this.socketIoGateway.sendPostCreatedNotification(message);
+
+    // Надсилання через WebSocket
+    this.nativeWebSocketGateway.sendPostCreatedNotification(message);
+
+    return createdPost;
   }
 
   async findAllPosts({ page, limit, search, filters }: ListPostsDto) {

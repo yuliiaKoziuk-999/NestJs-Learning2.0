@@ -61,6 +61,7 @@ enum Role {
   INTERN
   ENGINEER
   ADMIN
+  GUEST
 }
 
 enum sms_status_enum {
