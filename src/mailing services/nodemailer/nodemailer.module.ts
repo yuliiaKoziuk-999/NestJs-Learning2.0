@@ -11,7 +11,7 @@ import { EMAIL_QUEUE } from '@/constants/queue.constants';
   imports: [
     BullModule.forRoot({
       connection: {
-        host: 'localhost',
+        host: 'redis_container',
         port: 6379,
       },
     }),

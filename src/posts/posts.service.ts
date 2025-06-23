@@ -11,8 +11,8 @@ import { connect } from 'http2';
 export class PostsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(inputData: CreatePostDto, userId: number) {
-    const { title, content, categoryId, tagId } = inputData;
+  async create(inputData: CreatePostDto) {
+    const { title, content, categoryId, tagId, userId } = inputData;
 
     return this.prisma.post.create({
       data: {
