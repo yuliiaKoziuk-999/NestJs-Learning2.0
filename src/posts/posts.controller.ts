@@ -20,9 +20,8 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  async create(@Body() createPostDto: CreatePostDto, @Req() req: Request) {
-    const userId =req[`user`]?.[`sub`];//TODO CHECK
-    return this.postsService.create(createPostDto, userId);
+  async create(@Body() createPostDto: CreatePostDto) {
+    return this.postsService.create(createPostDto);
   }
 
   @Get()

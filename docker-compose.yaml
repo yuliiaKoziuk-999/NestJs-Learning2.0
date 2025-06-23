@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  backend:
+    build: ./
+    container_name: backend_container
+    env_file:
+      - .env
+    ports:
+      - '3000:3000'
+    depends_on:
+      - database
+      - redis
+    networks:
+      - nestjs_network
+
+  database:
+    image: postgres:15
+    container_name: postgres_container
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      - nestjs_network
+
+  redis:
+    image: redis:alpine
+    container_name: redis_container
+    ports:
+      - '6379:6379'
+    networks:
+      - nestjs_network
+
+volumes:
+  pgdata:
+
+networks:
+  nestjs_network:
+    driver: bridge
