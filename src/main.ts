@@ -9,7 +9,7 @@ import { MyLoggerService } from './my-logger/my-logger.service';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const options = new DocumentBuilder()
-    .setTitle('LeaderBoard- API')
+    .setTitle('Pet-Project')
     .setDescription('Platform API')
     .setVersion('v1')
     .addBearerAuth()
